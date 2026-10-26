@@ -1,0 +1,14 @@
+{
+  // markdownlint-cli2 配置：中文文档放宽了行长与强调用法，
+  // 但结构类规则（标题层级、列表、代码块语言）保持开启。
+  "globs": ["**/*.md", "!node_modules/**"],
+  "config": {
+    "MD013": false,
+    "MD024": { "siblings_only": true },
+    "MD029": false,
+    "MD033": { "allowed_elements": ["br", "details", "summary", "sub", "sup", "kbd"] },
+    "MD036": false,
+    "MD046": { "style": "fenced" },
+    "MD048": { "style": "backtick" }
+  }
+}

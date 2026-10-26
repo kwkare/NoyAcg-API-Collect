@@ -1,0 +1,21 @@
+# 抓包与凭证：永远不要提交
+jar.txt
+cookies.txt
+*.har
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# 自定义的抓包输出
+fixtures/local-*.json
