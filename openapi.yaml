@@ -322,6 +322,171 @@ paths:
         '500':
           description: 服务端 / Cloudflare 异常
 
+  /api/v4/signin/sign:
+    post:
+      tags: [task]
+      summary: 执行签到
+      description: |
+        空表单，无参数。成功加积分（实测 +1），并让 `record.today` 变 true。
+
+        - 成功：`{"continuous":N,"msg":"success","status":200}`
+        - 同日重复：`{"msg":"Please do not sign in too frequently","status":500}`（HTTP 仍是 200）
+        - 每日 00:00（UTC+8）重置
+      operationId: signIn
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 业务结果；`status` 为数字
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SigninResult'
+
+  /api/v3/community_list:
+    post:
+      tags: [community]
+      summary: 社区帖子列表
+      description: |
+        `type` 实测支持 `new` / `latest` / `like` / 空（空等同 new）。
+        返回的 `len` 是**全站帖子总数**，判断翻页用 `over`。
+      operationId: listCommunity
+      parameters:
+        - $ref: '#/components/parameters/AllowAdult'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [page]
+              properties:
+                page:
+                  type: integer
+                  minimum: 1
+                type:
+                  type: string
+                  enum: [new, latest, like, '']
+                  default: new
+                filter:
+                  type: string
+                  default: ''
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 帖子列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityListResult'
+
+  /api/v4/community/post/{id}:
+    post:
+      tags: [community]
+      summary: 帖子详情
+      description: '返回帖子本体 + 首页评论。注意 `data.uid` 是**当前登录用户**，作者在 `data.post.uid`。'
+      operationId: getCommunityPost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AllowAdult'
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 帖子详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostDetailResult'
+
+  /api/v4/community/post/{id}/comments:
+    post:
+      tags: [community]
+      summary: 评论列表（分页）
+      operationId: listCommunityComments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AllowAdult'
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                page:
+                  type: integer
+                  minimum: 1
+                  default: 1
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 评论页
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsResult'
+
+  /api/v4/community/post/{id}/reply:
+    post:
+      tags: [community]
+      summary: 发评论 / 回复
+      description: |
+        `reply_id=-1` 发顶层评论；填某个评论的 `rid` 则是楼中楼回复。
+
+        写操作：会在站点产生真实内容。响应只有 `{"status":"ok"}`，**不返回评论 ID**，
+        需要再拉一次评论列表确认。`hide_ip` 是前端固定传 `"false"` 的字段，
+        实测评论对象里没有 `ip`，不涉及隐私泄漏。
+      operationId: replyToCommunityPost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [reply_id, text, platform]
+              properties:
+                reply_id:
+                  type: integer
+                  description: '-1 表示顶层评论，否则为被回复评论的 rid'
+                  examples: [-1]
+                text:
+                  type: string
+                  description: 正文，支持表情包代码 [noygirl:yeah] 与 NID<id> 书籍引用
+                  examples: ['[noygirl:yeah]']
+                platform:
+                  type: string
+                  enum: [web, android]
+                hide_ip:
+                  type: string
+                  enum: ['true', 'false']
+                  description: 前端固定传 "false"；实测不影响返回内容
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 发送结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleResult'
+
 components:
   securitySchemes:
     session:
@@ -648,7 +813,9 @@ components:
           description: 签到时间，带时区（+08:00）
         weekday:
           type: integer
-          description: 星期（1 = 周一？未验证）
+          minimum: 1
+          maximum: 7
+          description: 星期，实测 1 = 周一 … 7 = 周日
 
     SigninRecordResult:
       type: object
@@ -659,7 +826,7 @@ components:
           examples: [200]
         continuous:
           type: integer
-          description: 当前连续签到天数
+          description: 当前连续签到天数；今天还没签时返回 -1
         data:
           type: array
           description: 签到记录，实测只返回最近 1 条
@@ -668,6 +835,193 @@ components:
         today:
           type: boolean
           description: 今天是否已签到
+
+    SigninResult:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: 200 成功 / 500 重复签到
+          examples: [200]
+        msg:
+          type: string
+          description: success 或错误文案（英文）
+          examples: [success]
+        continuous:
+          type: integer
+          description: 签到后的连续天数
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        uid:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: string
+          description: 头像相对路径
+        title:
+          type: string
+        content:
+          type: string
+          description: 正文；表情包以 [noygirl:yeah] 这类代码文本存储
+        image:
+          type: array
+          description: 图片路径数组，元素形如 image/<Uhash>-<sha256>.webp
+          items:
+            type: string
+        time:
+          type: integer
+          format: int64
+          description: 发帖时间（unix 秒）
+        expired:
+          type: integer
+          format: int64
+          description: 过期时间，实测 time + 7776000（90 天）
+        area:
+          type: string
+          description: 地区，服务端按 IP 判定（如 Japan）
+        platform:
+          type: string
+          enum: [web, android]
+        like:
+          type: integer
+        reply:
+          type: integer
+        is_like:
+          type: boolean
+        su:
+          type: integer
+          description: 语义未知
+        spoiler:
+          type: string
+          description: |
+            **需要模糊的图片下标**，逗号分隔（如 `0,1,2,3,4,5`），空串表示不模糊。
+            由服务端判定，发帖时无法指定。
+        edit:
+          type: integer
+          description: 编辑相关标记，语义未确认
+
+    Comment:
+      type: object
+      properties:
+        rid:
+          type: integer
+          description: 评论 ID（回复别人时作为 reply_id）
+        cid:
+          type: integer
+          description: 所属帖子 ID
+        uid:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: string
+        content:
+          type: string
+        reply_id:
+          type: integer
+          description: 顶层评论为 -1
+        root_id:
+          type: integer
+          description: 楼中楼时指向根评论 rid；顶层为 0
+        reply_uid:
+          type: integer
+        reply_username:
+          type: string
+        reply:
+          type: string
+          description: 被回复正文摘要
+        area:
+          type: string
+          description: 地区（粗粒度，非 IP）
+        time:
+          type: integer
+          format: int64
+        updated_at:
+          type: integer
+          format: int64
+        platform:
+          type: string
+        show_badge:
+          type: string
+          description: 佩戴徽章缩略图 URL，逗号拼接，顺序与 /api/badge 的 show 一致
+        su:
+          type: integer
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        reply_more:
+          type: boolean
+        reply_num:
+          type: integer
+
+    CommunityListResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        info:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        len:
+          type: integer
+          description: 全站帖子总数（不是本页条数）
+        over:
+          type: boolean
+          description: 是否已到末页
+        top:
+          type: boolean
+          description: 是否包含置顶帖
+
+    PostDetailResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: object
+          properties:
+            post:
+              $ref: '#/components/schemas/Post'
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
+            comment_count:
+              type: integer
+            top_count:
+              type: integer
+            uid:
+              type: integer
+              description: 当前登录用户 UID（不是作者）
+
+    CommentsResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: object
+          properties:
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
+            page:
+              type: integer
+            over:
+              type: boolean
+            top_count:
+              type: integer
 
     UploadTokenResult:
       type: object

@@ -12,6 +12,10 @@
     python noy_client.py whoami
     python noy_client.py ads
     python noy_client.py signin
+    python noy_client.py checkin --yes          # 执行签到
+    python noy_client.py list --type new        # 社区最新
+    python noy_client.py post 78930             # 帖子详情 + 评论
+    python noy_client.py reply 78930 "你好" --yes
     python noy_client.py home --adult false
     python noy_client.py badges
     python noy_client.py toggle-badge 8 --yes
@@ -126,6 +130,24 @@ class NoyClient:
         """签到记录。这个接口的 status 是数字 200，所以单独放行。"""
         return self._post("/api/v4/signin/record", ok_statuses=("ok", 200))
 
+    def signin(self) -> dict[str, Any]:
+        """执行签到（写操作）。今天已签会返回 status=500 + msg。"""
+        return self._post("/api/v4/signin/sign", ok_statuses=(200,))
+
+    def community_list(self, page: int = 1, type_: str = "new") -> dict[str, Any]:
+        return self._post("/api/v3/community_list", data={"page": page, "type": type_, "filter": ""})
+
+    def post_detail(self, post_id: int) -> dict[str, Any]:
+        return self._post(f"/api/v4/community/post/{post_id}").get("data", {})
+
+    def reply(self, post_id: int, text: str, reply_id: int = -1) -> bool:
+        """发评论 / 回复（写操作）。reply_id=-1 为顶层评论。"""
+        self._post(
+            f"/api/v4/community/post/{post_id}/reply",
+            data={"reply_id": reply_id, "text": text, "platform": "web", "hide_ip": "false"},
+        )
+        return True
+
     def badges(self) -> dict[str, Any]:
         payload = self._post("/api/badge")
         return {"data": payload.get("data", []), "show": payload.get("show", [])}
@@ -197,6 +219,21 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("whoami", help="打印用户信息摘要")
     sub.add_parser("ads", help="首页广告位")
     sub.add_parser("signin", help="签到记录（只读）")
+    p_sign = sub.add_parser("checkin", help="执行签到（默认 dry-run）")
+    p_sign.add_argument("--yes", action="store_true", help="真的签到")
+
+    p_post = sub.add_parser("post", help="看帖子详情与评论")
+    p_post.add_argument("id", type=int)
+
+    p_newpost = sub.add_parser("list", help="社区最新帖子")
+    p_newpost.add_argument("--page", type=int, default=1)
+    p_newpost.add_argument("--type", dest="type_", default="new", choices=["new", "latest", "like"])
+
+    p_reply = sub.add_parser("reply", help="发评论（默认 dry-run）")
+    p_reply.add_argument("id", type=int, help="帖子 ID")
+    p_reply.add_argument("text")
+    p_reply.add_argument("--reply-to", type=int, default=-1, help="要回复的评论 rid，默认 -1 顶层")
+    p_reply.add_argument("--yes", action="store_true")
 
     p_home = sub.add_parser("home", help="首页聚合数据")
     p_home.add_argument("--out", help="把原始 JSON 写到这里")
@@ -242,6 +279,36 @@ def main(argv: list[str] | None = None) -> int:
         elif args.cmd == "signin":
             rec = client.signin_record()
             print(f"连续签到 {rec.get('continuous')} 天，今天已签到：{rec.get('today')}")
+
+        elif args.cmd == "checkin":
+            rec = client.signin_record()
+            if rec.get("today"):
+                print("今天已经签过了，跳过")
+            elif not args.yes:
+                print("[dry-run] 将会签到（加 --yes 真的签）")
+            else:
+                print(client.signin())
+
+        elif args.cmd == "list":
+            data = client.community_list(args.page, args.type_)
+            print(f"全站 {data.get('len')} 帖，本页 {len(data.get('info') or [])} 条，末页={data.get('over')}")
+            for post in (data.get("info") or [])[:10]:
+                print(f"{post['id']:>7}  {post['time']}  {post['title'][:30]}")
+
+        elif args.cmd == "post":
+            data = client.post_detail(args.id)
+            post = data.get("post") or {}
+            print(f"#{post.get('id')} {post.get('title')}  作者 {post.get('username')}  图 {len(post.get('image') or [])} 张")
+            print(f"spoiler={post.get('spoiler')!r}  reply={post.get('reply')}")
+            for c in (data.get("comments") or [])[:10]:
+                print(f"  - {c['rid']} {c['username']}: {c['content'][:40]}")
+
+        elif args.cmd == "reply":
+            if not args.yes:
+                print(f"[dry-run] 将在 #{args.id} 评论：{args.text!r}（reply_id={args.reply_to}，加 --yes 发送）")
+            else:
+                client.reply(args.id, args.text, args.reply_to)
+                print("已发送")
 
         elif args.cmd == "home":
             data = client.home()
