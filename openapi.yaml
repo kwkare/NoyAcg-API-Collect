@@ -1,0 +1,575 @@
+openapi: 3.1.0
+
+info:
+  title: NoyAcg API（非官方整理）
+  version: 2026.10.26
+  summary: noymanga.com 客户端 HTTP API 的非官方描述
+  description: |
+    NoyAcg（漫画・同人志社区）Web / App 客户端接口的非官方逆向整理，**仅供技术研究**。
+
+    通用约定：
+
+    - 除图床上传外，全部为 `POST` + `application/x-www-form-urlencoded`；
+    - 业务状态放在响应体的 `status` 字段（`ok` / `error` / `login`），HTTP 状态码几乎恒为 `200`；
+    - 鉴权靠 Cookie `NOY_SESSION`，由 `POST /api/login` 下发，有效期约 30 天；
+    - 内容分级由请求头 `allow-adult` 控制，而不是账号配置。
+
+    字段的校验状态（✅ 实测 / 🟡 部分实测 / ⚠️ 待复测）见仓库文档，本文件只描述结构与已知枚举。
+  license:
+    name: CC BY-NC 4.0
+    identifier: CC-BY-NC-4.0
+  contact:
+    name: 文档仓库
+    url: https://github.com/kwkare/NoyAcg-API-Collect
+
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+
+servers:
+  - url: https://noymanga.com
+    description: 线上域名（旧 beta.noyteam.online 已 302 跳转）
+
+tags:
+  - name: auth
+    description: 登录与会话
+  - name: home
+    description: 首页聚合
+  - name: user
+    description: 用户资料与徽章
+  - name: community
+    description: 图床与发帖
+
+security:
+  - session: []
+
+paths:
+  /api/login:
+    post:
+      tags: [auth]
+      summary: 登录，换取 NOY_SESSION
+      operationId: login
+      description: |
+        邮箱 + 密码换 Cookie。成功时响应头带 `Set-Cookie: NOY_SESSION=…; Max-Age=2592000`。
+        失败（账号不存在 / 密码错误 / 被限流）仍是 HTTP 200，只能靠 `status: error` 判断，三者不可区分。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [user, pass]
+              properties:
+                user:
+                  type: string
+                  format: email
+                  description: 注册邮箱
+                pass:
+                  type: string
+                  format: password
+                  description: 密码明文（无签名、无 CSRF token）
+            examples:
+              typical:
+                value:
+                  user: you@example.com
+                  pass: YOUR_PASSWORD
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功（带 Set-Cookie）或失败（status=error）
+          headers:
+            Set-Cookie:
+              description: 成功时下发 `NOY_SESSION=<opaque>; Path=/; Max-Age=2592000`
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResult'
+
+  /api/home:
+    post:
+      tags: [home]
+      summary: 首页聚合数据
+      operationId: getHome
+      description: |
+        一次返回公告、四个榜单（`favDay` / `readDay` / `fs` / `proportion`）、番剧推荐和标签。
+        无请求体、无分页参数，响应约 40 KB。
+
+        `allow-adult: true` 只返回 R18，`false` 只返回全年龄，`both` 全给。
+      parameters:
+        - $ref: '#/components/parameters/AllowAdult'
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 业务结果，未登录时为 `{"status":"login"}`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeResult'
+
+  /api/v3/userinfo:
+    post:
+      tags: [user]
+      summary: 当前用户资料
+      operationId: getUserInfo
+      description: |
+        无请求体（`Content-Length: 0`）。返回邮箱、积分、头像/背景相对路径、佩戴中的徽章。
+        也常被当作最轻的会话探活接口使用。
+      parameters:
+        - $ref: '#/components/parameters/AllowAdult'
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效（`{"status":"login"}`）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResult'
+
+  /api/badge:
+    post:
+      tags: [user]
+      summary: 徽章列表与佩戴状态
+      operationId: getBadges
+      description: '`data` 是可用徽章的集合，`show` 是其中正在展示的 Id（注意是字符串数组）。'
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadgeResult'
+
+  /api/v3/set_badge_show:
+    post:
+      tags: [user]
+      summary: 切换徽章佩戴状态
+      operationId: toggleBadgeShow
+      description: |
+        **开关式（toggle）**：同一个 `id` 调一次翻转一次，没有显式的「设为佩戴/取消」参数，
+        因此重试不幂等。历史上传入不存在的 `id` 也返回 `ok`（未复测）。
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: integer
+                  description: 徽章 ID，取自 `/api/badge` 的 `data[].Id`
+                  examples: [8]
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleResult'
+
+  /api/get_image_bucket_token:
+    post:
+      tags: [community]
+      summary: 换图床上传凭证
+      operationId: getImageBucketToken
+      description: |
+        空表单请求，返回短时效的 `token`。拿到后立刻用于 `bucket.noymanga.com/api/upload_image`，
+        不要把旧 token 缓存下来复用。
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadTokenResult'
+
+  /api/v3/send_community:
+    post:
+      tags: [community]
+      summary: 发帖
+      operationId: sendCommunity
+      description: |
+        写操作，会在站点产生真实内容。
+
+        `image` 是**JSON 数组的字符串**，元素必须带 `image/` 前缀，例如 `["image/91266-xxx.webp"]`；
+        文件名来自上传接口返回的 `file`。接口不返回新帖 ID，要确认结果只能去列表页查。
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [title, content, platform]
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                image:
+                  type: string
+                  description: JSON 数组的字符串形式，元素形如 `image/<file>`
+                  examples: ['["image/91266-13025882b9402bd576b628a1030433a6388156d5aaeccb40362960af47a4aa79.webp"]']
+                platform:
+                  type: string
+                  enum: [web, android]
+                  description: 客户端来源，其他值未验证
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleResult'
+
+  /api/upload_image:
+    post:
+      tags: [community]
+      summary: 上传图片到图床
+      operationId: uploadImage
+      description: |
+        独立域名 `bucket.noymanga.com`，只认表单里的 `token`，**不要**带 `NOY_SESSION` Cookie。
+
+        服务端可能把图片统一转成 `.webp`，返回的 `file` 才是发帖时要用的文件名。
+      servers:
+        - url: https://bucket.noymanga.com
+          description: 图床
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/AllowAdult'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [token, file]
+              properties:
+                token:
+                  type: string
+                  description: "`/api/get_image_bucket_token` 返回的 token"
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 上传结果；token 有问题时返回 `{"status":"token_format_error"}`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResult'
+        '403':
+          description: 完全没带 token（2026-10-26 实测）
+        '500':
+          description: 服务端 / Cloudflare 异常
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: NOY_SESSION
+      description: 由 `POST /api/login` 下发的会话凭证，有效期约 30 天
+
+  parameters:
+    AllowAdult:
+      name: allow-adult
+      in: header
+      required: false
+      description: 内容分级过滤；按请求生效，不是账号设置
+      schema:
+        type: string
+        enum: ['true', 'false', 'both']
+        default: 'false'
+
+  schemas:
+    Status:
+      type: string
+      enum: [ok, error, login]
+      description: |
+        业务状态，HTTP 码通常是 200。
+
+        - `ok`：成功
+        - `error`：业务失败
+        - `login`：会话缺失或过期，需要重新登录
+
+    LoginResult:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok, error]
+
+    SimpleResult:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+
+    Bulletin:
+      type: object
+      properties:
+        text:
+          type: string
+          description: 公告文案
+        show:
+          type: boolean
+          description: 是否展示（前端目前已隐藏该区域）
+
+    Book:
+      type: object
+      description: 漫画 / 轻小说条目，四个榜单共用同一结构
+      required: [Bid, Bookname]
+      properties:
+        Bid:
+          type: integer
+          description: 书籍 ID
+        Mode:
+          type: integer
+          description: 内容类型，样例中恒为 1（语义待确认）
+        Bookname:
+          type: string
+        Description:
+          type: string
+          description: 简介，常见为空串
+        Author:
+          type: string
+          description: 作者，多人时以空格分隔
+        Pname:
+          type: string
+          description: 主角色，大量为占位符「未知」
+        Ptag:
+          type: string
+          description: 标签，**空格分隔**
+        Otag:
+          type: string
+          description: 来源类型，如「原創」
+        Time:
+          type: integer
+          format: int64
+          description: 更新时间（unix 秒）
+        Views:
+          type: integer
+        Favorites:
+          type: integer
+        F:
+          type: boolean
+          description: 当前用户是否已收藏（未登录恒为 false）
+        Len:
+          type: integer
+          enum: [0, 1, 2]
+          description: 篇幅类型；早期文档只记录了 1 / 2，语义待确认
+        Adult:
+          type: integer
+          enum: [0, 1]
+          description: 0 全年龄 / 1 R18，受请求头 allow-adult 影响
+        Status:
+          type: integer
+          enum: [0, 1]
+          description: 0 连载 / 1 完结
+        publish_year:
+          type: string
+          description: 发布年份；可能为空字符串，不保证能转 int
+        RatingSUM:
+          type: number
+          format: float
+          description: 平均评分（命名有误导性，并非求和）
+        RatingCount:
+          type: integer
+        RatingBayes:
+          type: number
+          format: float
+          description: 样例中恒为 0，疑似未启用
+
+    Stream:
+      type: object
+      description: 番剧 / 流媒体条目（字段名小写，与 Book 不一致）
+      properties:
+        sid:
+          type: integer
+        name:
+          type: string
+        des:
+          type: string
+        tags:
+          type: string
+          description: 标签，**逗号分隔**（与 Book.Ptag 的空格分隔不同）
+        pages:
+          type: string
+          description: 可观看集号，逗号分隔
+        type:
+          type: integer
+          description: 类型标识，样例中恒为 0
+        count:
+          type: integer
+          description: 总集数
+        time:
+          type: integer
+          format: int64
+          description: 创建时间（unix 秒）
+        up_time:
+          type: integer
+          format: int64
+          description: 最后更新时间（unix 秒）
+        f:
+          type: boolean
+          description: 当前用户是否收藏（小写 f）
+        views:
+          type: integer
+        favorites:
+          type: integer
+
+    HomeResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        bulletin:
+          $ref: '#/components/schemas/Bulletin'
+        favDay:
+          type: array
+          description: 日收藏榜
+          items:
+            $ref: '#/components/schemas/Book'
+        readDay:
+          type: array
+          description: 日阅读榜
+          items:
+            $ref: '#/components/schemas/Book'
+        fs:
+          type: array
+          description: 推荐位，排序规则未确认
+          items:
+            $ref: '#/components/schemas/Book'
+        proportion:
+          type: array
+          description: 高质 / 编辑推荐，规则未确认
+          items:
+            $ref: '#/components/schemas/Book'
+        stream:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stream'
+        tags:
+          type: array
+          description: 首页可用标签
+          items:
+            type: string
+
+    Badge:
+      type: object
+      properties:
+        Id:
+          type: integer
+          description: 徽章 ID（数字），与 BadgeResult.show 中的字符串需互相转换
+        Name:
+          type: string
+        Img:
+          type: string
+          format: uri
+          description: 展示用大图
+        Minimg:
+          type: string
+          format: uri
+          description: 列表用缩略图
+        Des:
+          type: string
+          description: 获得条件 / 说明
+
+    BadgeResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          type: array
+          description: 账户可用的全部徽章
+          items:
+            $ref: '#/components/schemas/Badge'
+        show:
+          type: array
+          description: 正在展示的徽章 Id，**字符串数组**
+          items:
+            type: string
+
+    UserInfo:
+      type: object
+      properties:
+        Email:
+          type: string
+          format: email
+          description: 明文返回，注意脱敏
+        Integral:
+          type: integer
+          description: 积分余额
+        Time:
+          type: integer
+          format: int64
+          description: 注册 / 首次登录时间（unix 秒），语义待确认
+        Uhash:
+          type: string
+          description: 用户短哈希，出现在头像与图床文件名里
+        Uid:
+          type: integer
+        Username:
+          type: string
+        Avatar:
+          type: string
+          description: 头像**相对路径**（`avatar/xxx.webp`），需自行拼图床基地址
+        Bg:
+          type: string
+          description: 背景图**相对路径**（`bg/xxx.webp`）
+        CommentLen:
+          type: integer
+          description: 评论数，样例为 0（待确认）
+        Badge:
+          type: array
+          description: 当前佩戴中的徽章
+          items:
+            $ref: '#/components/schemas/Badge'
+        Su:
+          type: integer
+          description: 语义未知，样例恒为 0
+
+    UserInfoResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        userinfo:
+          $ref: '#/components/schemas/UserInfo'
+
+    UploadTokenResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        token:
+          type: string
+          description: 短时效上传凭证，现拿现用
+
+    UploadImageResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, token_format_error]
+        file:
+          type: string
+          description: 图床文件名，形如 `<Uhash>-<sha256>.webp`
+          examples: ['91266-13025882b9402bd576b628a1030433a6388156d5aaeccb40362960af47a4aa79.webp']
