@@ -7,7 +7,7 @@
 | Endpoint | `POST https://bucket.noymanga.com/api/upload_image` |
 | Content-Type | `multipart/form-data` |
 | 鉴权 | 表单里的 `token`（来自 [get_image_bucket_token](./get_image_bucket_token.md)），**不用 Cookie** |
-| 校验 | 🟡 空 token 返回 `403`（2026-10-26 实测） |
+| 校验 | ✅ 2026-10-27 实测（6 张图全部上传成功） |
 
 图床是独立域名，跨域限制严格，所以这个接口基本只能服务端 / 本地脚本调用。网页端自己走的是主域代理路径
 `https://noymanga.com/bucket/api/upload_image`（同一套参数），脚本用哪个都行。
@@ -36,7 +36,9 @@
 | `token` | string | 是 | 上一步换到的凭证 |
 | `file` | file | 是 | 图片文件，字段名必须是 `file` |
 
-支持 `jpg / png / webp / gif` 等常见格式，服务端**可能统一转成 `.webp`**。
+支持 `jpg / png / webp / gif` 等常见格式，服务端会**统一转成 `.webp`**（实测 6/6 全部转码，包括原本就是 webp 的）。
+
+实测通过的规格：4.66 MB / 2894×4093 的 webp 原图照收，没有被压缩或拒绝；6 张图串行上传耗时约 42 秒。
 
 ## 成功响应
 
@@ -52,7 +54,7 @@
 | `file` | string | 图床文件名，格式 `<Uhash>-<sha256>.webp` |
 | `status` | string | `ok` |
 
-文件名里就是 `userinfo.Uhash`，所以同一个用户的图片能按前缀归组。
+文件名里就是 `userinfo.Uhash`，所以同一个用户的图片能按前缀归组。`<sha256>` 部分看起来是内容哈希（同图重传是否复用同一文件名未验证 ⚠️）。
 
 ## 失败分支
 

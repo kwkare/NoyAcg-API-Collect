@@ -2,6 +2,37 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，版本号取「整理批次（年.月.日）」而不是语义化版本。
 
+## 2026.10.27 — 写操作链路实测（发帖 / 评论 / 签到）
+
+在账号所有者确认后，把「会产生真实内容」的接口也跑了一遍，全部为一次真实操作 + 回读验证。
+
+### 新增实测结论
+
+- **发帖 `POST /api/v3/send_community` 升 ✅**：标题「图」+ 6 张图 + 正文只放一个表情包代码（`[noygirl:yeah]`）成功发布，`image` 数组元素为 `image/<Uhash>-<sha256>.webp`。响应只有 `{"status":"ok"}`，**不返回帖子 ID**。
+- **模糊（`spoiler`）由服务端判定**：上传时带 `allow-adult: false`、发帖请求里没有任何成人向参数，6 张图仍被标成 `"spoiler":"0,1,2,3,4,5"`。客户端无法手动指定或取消。
+- **帖子 90 天过期**：`expired = time + 7776000`（正好 90 天）。
+- **表情包没有 API**：4 组 57 个硬编码在前端 bundle，图片是静态资源 `/stickers/<file>`，正文里写 `[noygirl:yeah]` 这类代码文本即可；同一正则还解析 `NID<id>` 书籍引用。
+- **签到 `POST /api/v4/signin/sign`**：空表单，成功 `{continuous, msg:"success", status:200}`，**积分 +1**；同日重复签到返回 `{msg:"Please do not sign in too frequently", status:500}`（HTTP 仍 200）。
+- **签到每天 00:00（UTC+8）刷新**：跨零点实测 `record.today` 由 `true` → `false` → 签到后 `true`；未签到时顶层 `continuous` 是 `-1`，`data[].weekday` 为 1（周一）…7（周日）。
+- **评论 `POST /api/v4/community/post/<id>/reply` 升 ✅**：`reply_id=-1` 为顶层评论（`root_id=0`），响应只有 `{"status":"ok"}`、**不返回评论 ID**；回读确认 `reply 0 → 1`。评论对象**不含 IP**，只有粗粒度 `area`。
+
+### 新增文档
+
+- `docs/community/community_list.md`：`POST /api/v3/community_list`（`type` 实测 `new` / `latest` / `like` / 空；`len` 是**全站帖子总数**，翻页看 `over`）。
+- `docs/community/post_detail.md`：详情 / 评论列表 / 发评论 / 楼中楼，含 `Post` 与 `Comment` 完整字段表。
+- `docs/community/stickers.md`：表情包代码全表（Noy Girl 12 / SB 11 / Kimeemaru 23 / Vik 11）与 `NID` 引用机制。
+- `fixtures/` 新增 `signin-success.json`、`signin-record-pending.json`、`signin-too-frequent.json`、`community-list-sample.json`、`post-detail-sample.json`，并更新 `signin-record.json`。
+
+### 变更
+
+- `docs/task/signin.md` 重写：补执行签到、刷新时间、`continuous=-1` 的坑、积分奖励、重复签到错误。
+- `docs/community/upload_image.md` 升 ✅：4.66 MB 原图照收、统一转 `.webp`、6 张约 42 秒。
+- `README.md` 状态表与「未收录」清单同步（`edit_community_post` / `community_like` 已挖到参数但未实测）。
+
+### 隐私说明
+
+本次实测涉及的真实内容（帖子、评论）已经公开发布；所有 fixture 中的 Uid / 用户名 / 头像 / IP / 图床真实文件名均已打码。
+
 ## 2026.10.26-b — 登录态实测校正
 
 拿到可用会话后把全部端点重新过了一遍（只读，未触发任何写操作），推翻了上游文档里几条关键结论。

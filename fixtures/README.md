@@ -9,7 +9,12 @@
 | `userinfo.json` | `POST /api/v3/userinfo` | 2026-10-26 | 邮箱 / Uid / Uhash / 昵称 / 头图路径全部打码。**保留 `Badge[].Id` 全为 `0` 的真实形态**，这正是要记录的坑 |
 | `badge.json` | `POST /api/badge` | 2026-10-26 | 5 枚徽章（`Id` 8–12），`show` 保留「字符串数组」的真实形态 |
 | `ads.json` | `POST /api/v3/ads` | 2026-10-26 | 广告位。`img` 文件名与 `url` 全部替换为占位符，避免转发第三方推广链接 |
-| `signin-record.json` | `POST /api/v4/signin/record` | 2026-10-26 | 签到记录。`uid` / `ip` / 记录 `id` 已打码；保留 `status` 是**数字** `200` 的形态 |
+| `signin-record.json` | `POST /api/v4/signin/record` | 2026-10-27 | 签到记录（今天已签，2 条）。`uid` / `ip` 已打码；保留 `status` 是**数字** `200` 的形态 |
+| `signin-record-pending.json` | 同上 | 2026-10-27 | 今天**没签**时的形态：`today: false`、顶层 `continuous: -1` |
+| `signin-success.json` | `POST /api/v4/signin/sign` | 2026-10-27 | 签到成功：`{continuous, msg:"success", status:200}` |
+| `signin-too-frequent.json` | 同上 | 2026-10-27 | 同日重复签到：`{msg:"Please do not sign in too frequently", status:500}`（HTTP 仍是 200） |
+| `community-list-sample.json` | `POST /api/v3/community_list` | 2026-10-27 | 列表精简样例（1 条帖子），含 `spoiler` / `expired` / `len` 等易误用字段 |
+| `post-detail-sample.json` | `POST /api/v4/community/post/<id>` | 2026-10-27 | 帖子详情 + 1 条评论。作者 uid / 头像 / 图床文件名已打码 |
 | `unauthorized.json` | 任意需要鉴权的接口 | 2026-10-26 | 会话失效时的统一响应 `{"status":"login"}` |
 
 ## 约定

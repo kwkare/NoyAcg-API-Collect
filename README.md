@@ -33,10 +33,15 @@
 | 用户信息 | `POST /api/v3/userinfo` | Cookie | ✅ 2026-10-26 | [userinfo](./docs/user/userinfo.md) |
 | 徽章列表 | `POST /api/badge` | Cookie | ✅ 2026-10-26 | [badge](./docs/user/badge.md) |
 | 徽章佩戴开关 | `POST /api/v3/set_badge_show` | Cookie | ✅ 2026-10-26（toggle，且不校验 ID） | [set_badge_show](./docs/user/set_badge_show.md) |
-| 签到记录 | `POST /api/v4/signin/record` | Cookie | ✅ 2026-10-26 | [signin](./docs/task/signin.md) |
+| 签到记录 | `POST /api/v4/signin/record` | Cookie | ✅ 2026-10-27（跨零点实测） | [signin](./docs/task/signin.md) |
+| 执行签到 | `POST /api/v4/signin/sign` | Cookie | ✅ 2026-10-27（真签了） | [signin](./docs/task/signin.md) |
 | 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | ✅ 2026-10-26 | [get_image_bucket_token](./docs/community/get_image_bucket_token.md) |
 | 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | 🟡 空 token 403 已实测 | [upload_image](./docs/community/upload_image.md) |
-| 发帖 | `POST /api/v3/send_community` | Cookie | ⚠️ 待复测（写操作） | [send_community](./docs/community/send_community.md) |
+| 发帖 | `POST /api/v3/send_community` | Cookie | ✅ 2026-10-27（真发了一帖 6 图） | [send_community](./docs/community/send_community.md) |
+| 帖子列表 | `POST /api/v3/community_list` | Cookie | ✅ 2026-10-27 | [community_list](./docs/community/community_list.md) |
+| 帖子详情 / 评论列表 | `POST /api/v4/community/post/<id>` | Cookie | ✅ 2026-10-27 | [post_detail](./docs/community/post_detail.md) |
+| 发评论 / 回复 | `POST /api/v4/community/post/<id>/reply` | Cookie | ✅ 2026-10-27（真发了一条） | [post_detail](./docs/community/post_detail.md) |
+| 表情包 | 无 API（前端硬编码） | — | ✅ 2026-10-27 | [stickers](./docs/community/stickers.md) |
 
 机器可读版本：[`openapi.yaml`](./openapi.yaml)（OpenAPI 3.1，覆盖上面全部端点）。
 
@@ -76,6 +81,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 | `userinfo.Badge` **不是**佩戴中的徽章 | 它是全部徽章（实测 `show` 只有 4 项时仍返回 5 项），佩戴状态只看 `/api/badge.show` |
 | `set_badge_show` **不校验 ID** | 任何字符串（包括 `114514`、空串）都会被写进 `show`，只能靠「再切一次」清掉 |
 | 新增 `/api/v3/ads`、`/api/v4/signin/record` | 广告位与签到记录，此前完全没记录 |
+| 写操作链路跑通：发帖 6 图 / 评论 / 签到 | 发帖**不返帖 ID**、评论**不返评论 ID**，都要回列表查；`spoiler` 由服务端判定 |
 | 徽章图床从 `bucket.239847.xyz` 换到 `bucket.noymanga.com` | 老文档里的图片 URL 全部失效 |
 
 ## 字段可信度
@@ -102,12 +108,12 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 
 以下接口尚未整理（欢迎 PR，附 curl 或抓包即可）：
 
-- 执行签到 / 签到奖励规则（只找到 `/api/v4/signin/record` 查询接口）
-- 图床的 `/bucket/api/upload_avatar`、`/bucket/api/upload_bg`（从 JS bundle 读到，未验证）
-- 收藏、订阅、阅读进度
-- 评论、回复、举报
+- `POST /api/v3/edit_community_post`（编辑帖子）、`POST /api/v3/community_like`（点赞）：参数已从 bundle 挖出，**未实测**
+- 楼中楼回复列表 `POST /api/v4/community/post/<id>/comment/<rid>/replies`
+- 图床的 `/bucket/api/upload_avatar`、`/bucket/api/upload_bg`（同家族，未验证）
+- 收藏、订阅、阅读进度、积分流水（bundle 里有 `daily_signin` / `store_purchase` 等动作枚举）
+- 举报、通知 / 消息
 - 搜索、分类浏览、榜单分页（`/latest?sort=stream` 等路由存在）
-- 通知 / 消息
 - App（`platform=android`）专用接口
 
 ## 仓库结构
@@ -123,8 +129,8 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 │   ├── ads.md
 │   ├── auth/              login / NOY_SESSION
 │   ├── user/              userinfo / badge / set_badge_show
-│   ├── task/              signin（记录查询，写接口待补）
-│   └── community/         图床 token / 上传 / 发帖
+│   ├── task/              signin（记录查询 + 执行签到）
+│   └── community/         图床 token / 上传 / 发帖 / 列表 / 详情与评论 / 表情包
 ├── fixtures/              原始响应样例（已脱敏，供测试与对比）
 ├── examples/              最小客户端
 ├── scripts/check_docs.py  本地/CI 自检：编码、JSON 有效性、站内链接、旧域名残留
