@@ -1,42 +1,26 @@
-# »ñÈ¡Í¼´²ÉÏ´«Æ¾Ö¤ API£¨/api/get_image_bucket_token£©
+# å›¾åºŠä¸Šä¼ å‡­è¯
 
-## ÓÃÍ¾
-µ±ÄãÔÚÉçÇø·¢ÌûĞèÒª´øÍ¼Ê±£¬
-Ç°¶Ë»áÏÈ°ÑÍ¼Æ¬ÉÏ´«µ½¶ÀÁ¢µÄÍ¼´²ÓòÃû£¨`bucket.noymanga.com`£©¡£
-ĞèÒªÍ¨¹ıÕâ¸öAPI get token¡£
+å‘å¸–å¸¦å›¾æ˜¯ä¸¤æ­¥ï¼š**å…ˆæ¢ tokenï¼Œå†æ‹¿ token å»å›¾åºŠä¸Šä¼ **ã€‚è¿™ä¸ªæ¥å£è´Ÿè´£ç¬¬ä¸€æ­¥ã€‚
 
----
-
-## ½Ó¿ÚĞÅÏ¢
-
-| ÏîÄ¿ | ÄÚÈİ |
+| é¡¹ç›® | å†…å®¹ |
 | --- | --- |
-| Endpoint | `https://beta.noyteam.online/api/get_image_bucket_token` |
-| ÇëÇó·½Ê½ | `POST` |
-| Content-Type | `application/x-www-form-urlencoded` |
-| ·µ»Ø¸ñÊ½ | `application/json` |
-| ¼øÈ¨·½Ê½ | Cookie£¨`NOY_SESSION`£©|
+| Endpoint | `POST https://noymanga.com/api/get_image_bucket_token` |
+| Content-Type | `application/x-www-form-urlencoded`ï¼ˆç©ºè¡¨å•ï¼‰ |
+| é‰´æƒ | Cookie `NOY_SESSION` |
+| æ ¡éªŒ | ğŸŸ¡ æœªç™»å½•åˆ†æ”¯ 2026-10-26 å®æµ‹ï¼›æˆåŠŸåˆ†æ”¯æ²¿ç”¨ 2026-03 è®°å½• |
 
----
+## è¯·æ±‚å¤´
 
-
-
-## ÇëÇóÍ·£¨Headers£©
-
-Êµ¼ÊÖ»Òª Cookie Í¨³£¾Í¹»ÓÃ£¬µ«ÎªÁË¸üÌù½üä¯ÀÀÆ÷ÇëÇó£¬½¨Òé×îÉÙ´øÕâ¼¸¸ö£º
-
-| ×Ö¶Î | ±ØÌî | Ê¾Àı | ËµÃ÷ |
+| å­—æ®µ | å¿…å¡« | ç¤ºä¾‹ | è¯´æ˜ |
 | --- | --- | --- | --- |
-| `Cookie` | ÊÇ | `NOY_SESSION=xxxx` | µÇÂ¼Ì¬»á»°£¨À´×Ô `/api/login`£© |
-| `Content-Type` | ÊÇ | `application/x-www-form-urlencoded` | ¿Õ±íµ¥ÇëÇó |
-| `Origin` | ·ñ | `https://beta.noyteam.online` | ä¯ÀÀÆ÷³£¼û |
-| `Referer` | ·ñ | `https://beta.noyteam.online/community/create` | ä¯ÀÀÆ÷³£¼û |
-| `allow-adult` | ·ñ | `false` | ²Î¿¼Ç°¶ËÇëÇó |
+| `Cookie` | æ˜¯ | `NOY_SESSION=xxxx` | å¤±æ•ˆæ—¶ `{"status":"login"}` |
+| `Content-Type` | æ˜¯ | `application/x-www-form-urlencoded` | ç©ºè¡¨å•ä¹Ÿè¦å¸¦ |
+| `Origin` | å¦ | `https://noymanga.com` | æµè§ˆå™¨ä¼šå¸¦ |
+| `Referer` | å¦ | `https://noymanga.com/community/create` | æµè§ˆå™¨ä¼šå¸¦ |
+| `allow-adult` | å¦ | `false` | å‰ç«¯ä¼šå¸¦ï¼Œæ˜¯å¦å½±å“ token æœªç¡®è®¤ âš ï¸ |
 
----
+## æˆåŠŸå“åº”
 
-## ÏìÓ¦
-³É¹¦Ê¾Àı£º
 ```json
 {
   "status": "ok",
@@ -44,36 +28,32 @@
 }
 ```
 
-×Ö¶ÎËµÃ÷£º
-- `token`£º¿´ÆğÀ´Ïñ URL-safe base64 µÄÒ»´®×Ö·û¡£ËüÍ¨³£ÊÇ¶ÌÆÚÓĞĞ§µÄ£¬½¨Òé¡°ÏÖÄÃÏÖÓÃ¡±£¬²»Òª´æ×Å¸ôºÜ¾ÃÔÙÉÏ´«¡£
+| å­—æ®µ | ç±»å‹ | è¯´æ˜ |
+| --- | --- | --- |
+| `status` | string | `ok` / `login` |
+| `token` | string | ä¸Šä¼ å‡­è¯ï¼Œå½¢å¦‚ URL-safe base64 |
 
-Ê§°Ü·½Ïò£º
-- `status=login`£º»á»°¹ıÆÚ»òÎ´µÇÂ¼¡£
+## å…³é”®ç‰¹æ€§
 
----
+- **çŸ­æ—¶æ•ˆ**ï¼šæ¢åˆ°å°±ç«‹åˆ»ç”¨ï¼Œåˆ«ç¼“å­˜åˆ°ä¸‹ä¸€ä¸ªå°æ—¶ï¼ˆå…·ä½“ TTL æœªæµ‹ âš ï¸ï¼‰ã€‚
+- **ä¸€æ¬¡æ€§å€¾å‘**ï¼šé‡å¤ä½¿ç”¨åŒä¸€ token ä¸Šä¼ å¤šå¼ å›¾æ˜¯å¦å¯è¡ŒæœªéªŒè¯ï¼›æ‰¹é‡ä¸Šä¼ å»ºè®®æ¯å¼ æ¢ä¸€æ¬¡ã€‚
+- **ä¸ Cookie è§£è€¦**ï¼šå›¾åºŠåªè®¤ tokenï¼Œä¸è®¤ `NOY_SESSION`ï¼Œæ‰€ä»¥ä¸Šä¼ è¯·æ±‚ä¸éœ€è¦å¸¦ Cookieï¼ˆä¹Ÿä¸è¯¥å¸¦ï¼‰ã€‚
 
-## Ê¾Àı
+## å¤±è´¥åˆ†æ”¯
 
-### curl
+| åœºæ™¯ | HTTP | å“åº” |
+| --- | --- | --- |
+| æœªç™»å½• / ä¼šè¯å¤±æ•ˆ | `200` | `{"status":"login"}` |
+
+## ç¤ºä¾‹
+
 ```bash
-curl "https://beta.noyteam.online/api/get_image_bucket_token" \
-  -X POST \
-  -H "content-type: application/x-www-form-urlencoded" \
-  -b "NOY_SESSION=<ÄãµÄ»á»°>"
+BASE=https://noymanga.com
+
+curl -s -X POST "$BASE/api/get_image_bucket_token" \
+  -b "NOY_SESSION=xxxx" \
+  -H "content-type: application/x-www-form-urlencoded" |
+  python3 -c "import json,sys; print(json.load(sys.stdin)['token'])"
 ```
 
-### PowerShell£¨Invoke-WebRequest£©Example
-```powershell
-$session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-$session.Cookies.Add((New-Object System.Net.Cookie("NOY_SESSION", "<ÄãµÄ»á»°>", "/", "beta.noyteam.online")))
-
-Invoke-WebRequest -UseBasicParsing -Uri "https://beta.noyteam.online/api/get_image_bucket_token" `
-  -Method POST `
-  -WebSession $session `
-  -ContentType "application/x-www-form-urlencoded"
-```
-
----
-
-## ÏÂÒ»²½
-ÄÃµ½ `token` ºó£¬È¥¿´²¢µ÷ÓÃ£º`docs/community/upload_image.md`¡£
+æ‹¿åˆ° token åç»§ç»­ï¼š[upload_image.md](./upload_image.md)ã€‚

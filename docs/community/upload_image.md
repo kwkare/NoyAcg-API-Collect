@@ -1,48 +1,37 @@
-# Í¼´²ÉÏ´« API£¨bucket.noymanga.com/api/upload_image£©
+# å›¾ç‰‡ä¸Šä¼ ï¼ˆå›¾åºŠï¼‰
 
-µ±Äã×¼±¸·¢Ìû²¢¸½´øÍ¼Æ¬Ê±£¬ĞèÒªÏÈ°ÑÍ¼Æ¬ÎÄ¼şÉÏ´«µ½Í¼´²¡£
+æŠŠæœ¬åœ°å›¾ç‰‡ä¼ åˆ°ç‹¬ç«‹å›¾åºŠï¼Œæ‹¿å›ä¸€ä¸ªæ–‡ä»¶åï¼›å‘å¸–æ—¶åªå¼•ç”¨æ–‡ä»¶åï¼Œ**ä¸ä¼šäºŒæ¬¡ä¸Šä¼ **ã€‚
 
-ÕâÌõ½Ó¿Ú»á°ÑÄã±¾µØµÄ `jpg/png/webp/...` ÉÏ´«ÉÏÈ¥£¬²¢·µ»ØÒ»¸ö `file` ÎÄ¼şÃû¡£
-ºóĞø·¢Ìû²¢²»ÊÇ°ÑÍ¼Æ¬¶ş´ÎÉÏ´«£¬¶øÊÇ°ÑÕâ¸ö `file` ×÷ÎªÒıÓÃ´«¸ø·¢Ìû½Ó¿Ú¡£
-
----
-
-
-## ½Ó¿ÚĞÅÏ¢
-
-| ÏîÄ¿ | ÄÚÈİ |
+| é¡¹ç›® | å†…å®¹ |
 | --- | --- |
-| Endpoint | `https://bucket.noymanga.com/api/upload_image` |
-| ÇëÇó·½Ê½ | `POST` |
+| Endpoint | `POST https://bucket.noymanga.com/api/upload_image` |
 | Content-Type | `multipart/form-data` |
-| ·µ»Ø¸ñÊ½ | `application/json` |
+| é‰´æƒ | è¡¨å•é‡Œçš„ `token`ï¼ˆæ¥è‡ª [get_image_bucket_token](./get_image_bucket_token.md)ï¼‰ï¼Œ**ä¸ç”¨ Cookie** |
+| æ ¡éªŒ | ğŸŸ¡ ç©º token è¿”å› `403`ï¼ˆ2026-10-26 å®æµ‹ï¼‰ |
 
----
+å›¾åºŠæ˜¯ç‹¬ç«‹åŸŸåï¼Œè·¨åŸŸé™åˆ¶ä¸¥æ ¼ï¼ˆå‰ç«¯è‡ªå·±éƒ½è¿‡ä¸å»ï¼‰ï¼Œæ‰€ä»¥è¿™ä¸ªæ¥å£åŸºæœ¬åªèƒ½æœåŠ¡ç«¯ / æœ¬åœ°è„šæœ¬è°ƒç”¨ã€‚
 
-## ÇëÇóÍ·£¨Headers£©
+## è¯·æ±‚å¤´
 
-| ×Ö¶Î | ±ØÌî | Ê¾Àı | ËµÃ÷ |
+| å­—æ®µ | å¿…å¡« | ç¤ºä¾‹ | è¯´æ˜ |
 | --- | --- | --- | --- |
-| `Origin` | ½¨Òé | `https://beta.noyteam.online` | Ä£Äâ¿çÓòÉÏ´«£¨µ«ÆäÊµÕâ¸ö½Ó¿ÚCORS¹ı²»È¥awa£© |
-| `Referer` | ½¨Òé | `https://beta.noyteam.online/` | Í¬ÉÏ |
-| `allow-adult` | ·ñ | `false` | ²Î¿¼Ç°¶ËÇëÇó |
+| `Origin` | å»ºè®® | `https://noymanga.com` | æ¨¡æ‹Ÿç½‘é¡µç«¯æ¥æºï¼›ä¸åˆ·å¯èƒ½è¢«æ‹’ âš ï¸ |
+| `Referer` | å»ºè®® | `https://noymanga.com/` | åŒä¸Š |
+| `allow-adult` | å¦ | `false` | ä¸å‰ç«¯ä¸€è‡´ |
 
+> **ä¸è¦**å¸¦ `Cookie: NOY_SESSION`ã€‚å›¾åºŠåªè®¤ `token`ï¼Œå¤šå¸¦å‡­æ®æ—¢æ— å¿…è¦ï¼Œä¹Ÿç­‰äºæŠŠä¼šè¯äº¤ç»™å¦ä¸€ä¸ªåŸŸã€‚
 
----
+## è¯·æ±‚å‚æ•°ï¼ˆmultipartï¼‰
 
-## ÇëÇó²ÎÊı£¨±íµ¥£©
-
-| ×Ö¶Î | ÀàĞÍ | ±ØÌî | ËµÃ÷ |
+| å­—æ®µ | ç±»å‹ | å¿…å¡« | è¯´æ˜ |
 | --- | --- | --- | --- |
-| `token` | string | ÊÇ | ÉÏ´«Æ¾Ö¤£¨ÉÏÒ»²½½Ó¿Ú·µ»Ø£© |
-| `file` | file | ÊÇ | Í¼Æ¬ÎÄ¼ş£¨×Ö¶ÎÃû±ØĞëÊÇ `file`£© |
+| `token` | string | æ˜¯ | ä¸Šä¸€æ­¥æ¢åˆ°çš„å‡­è¯ |
+| `file` | file | æ˜¯ | å›¾ç‰‡æ–‡ä»¶ï¼Œå­—æ®µåå¿…é¡»æ˜¯ `file` |
 
+æ”¯æŒ `jpg / png / webp / gif` ç­‰å¸¸è§æ ¼å¼ï¼ŒæœåŠ¡ç«¯**å¯èƒ½ç»Ÿä¸€è½¬æˆ `.webp`**ã€‚
 
----
+## æˆåŠŸå“åº”
 
-## ÏìÓ¦
-
-³É¹¦Ê¾Àı£º
 ```json
 {
   "file": "91266-13025882b9402bd576b628a1030433a6388156d5aaeccb40362960af47a4aa79.webp",
@@ -50,29 +39,72 @@
 }
 ```
 
-×Ö¶ÎËµÃ÷£º
-- `file`£ºÍ¼´²ÎÄ¼şÃû¡£×¢Òâ·şÎñ¶Ë¿ÉÄÜ»áÍ³Ò»×ª³É `.webp`¡£
+| å­—æ®µ | ç±»å‹ | è¯´æ˜ |
+| --- | --- | --- |
+| `file` | string | å›¾åºŠæ–‡ä»¶åï¼Œæ ¼å¼ `<Uhash>-<sha256>.webp` |
+| `status` | string | `ok` |
 
-Ê§°ÜÊ¾Àı£º
-- `{"status":"token_format_error"}`£ºtoken ²»¶Ô»òÒÑ¹ıÆÚ£¬»òÕßÉÏ´«±íµ¥×Ö¶Î²»·ûºÏÔ¤ÆÚ¡£
-- HTTP 500£º·şÎñ¶ËÒì³££¨¿ÉÄÜÊÇcf·¢Íş£©¡£
+æ–‡ä»¶åé‡Œå°±æ˜¯ `userinfo.Uhash`ï¼Œæ‰€ä»¥åŒä¸€ä¸ªç”¨æˆ·çš„å›¾ç‰‡èƒ½æŒ‰å‰ç¼€å½’ç»„ã€‚
 
-ÅÅ²éË³Ğò½¨Òé£º
-1. ÖØĞÂµ÷ÓÃ `get_image_bucket_token` ÄÃĞÂ token¡£
-2. È·ÈÏ±íµ¥×Ö¶ÎÃûÎª `token` + `file`¡£
-3. ²»Òª×Ô¼ºÆ´ boundary¡£
+## å¤±è´¥åˆ†æ”¯
 
----
+| åœºæ™¯ | è¡¨ç° | åŸå›  |
+| --- | --- | --- |
+| token è¿‡æœŸ / æ ¼å¼ä¸å¯¹ / å­—æ®µåä¸å¯¹ | `{"status":"token_format_error"}` | æœ€å¸¸è§ï¼Œé‡æ–°æ¢ token |
+| å®Œå…¨æ²¡å¸¦ token | HTTP `403` | 2026-10-26 å®æµ‹ |
+| æœåŠ¡ç«¯å¼‚å¸¸ | HTTP `500` | Cloudflare æˆ–åç«¯æŠ–åŠ¨ï¼Œé‡è¯•å³å¯ |
 
-## Ê¾Àı
+æ’æŸ¥é¡ºåºï¼š
 
-### curl£¨ÍÆ¼ö£©
+1. é‡æ–°è°ƒä¸€æ¬¡ `get_image_bucket_token`ï¼Œåˆ«å¤ç”¨æ—§ tokenï¼›
+2. ç¡®è®¤è¡¨å•å­—æ®µåæ˜¯ `token` + `file`ï¼›
+3. è®© `curl` / `requests` è‡ªå·±ç”Ÿæˆ boundaryï¼Œä¸è¦æ‰‹æ‹¼ï¼›
+4. è¡¥ä¸Š `Origin` / `Referer`ã€‚
+
+## ç¤ºä¾‹
+
+### curl
+
 ```bash
-curl "https://bucket.noymanga.com/api/upload_image" \
+BASE=https://noymanga.com
+TOKEN=$(curl -s -X POST "$BASE/api/get_image_bucket_token" \
+  -b "NOY_SESSION=xxxx" -H "content-type: application/x-www-form-urlencoded" |
+  python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
+
+curl -s "https://bucket.noymanga.com/api/upload_image" \
   -X POST \
-  -H "origin: https://beta.noyteam.online" \
-  -H "referer: https://beta.noyteam.online/" \
-  -F "token=<ÉÏÒ»²½·µ»ØµÄtoken>" \
-  -F "file=@b57f10d4a0a40adb08ef3e6f55b64f07.jpg"
+  -H "origin: https://noymanga.com" \
+  -H "referer: https://noymanga.com/" \
+  -F "token=$TOKEN" \
+  -F "file=@/path/to/any-photo.jpg"
 ```
 
+> ä¸Šæ¸¸æ›¾åœ¨ä»“åº“æ ¹ç›®å½•å¡äº†ä¸¤å¼ éªŒè¯ç”¨çš„æµ‹è¯•å›¾ï¼ˆä¸€å¼ ç™½èœ webpã€ä¸€å¼  378Ã—306 çš„ jpgï¼‰ï¼Œæœ¬æ¬¡æ•´ç†å·²åˆ é™¤â€”â€”æµ‹è¯•è¿™ä¸ªæ¥å£ç”¨ä½ æœ¬åœ°ä»»æ„ä¸€å¼ å›¾ç‰‡å³å¯ã€‚
+
+### Python
+
+```python
+import requests
+
+BASE = "https://noymanga.com"
+
+
+def upload_image(session: requests.Session, path: str) -> str:
+    token = session.post(f"{BASE}/api/get_image_bucket_token", timeout=20).json()["token"]
+
+    with open(path, "rb") as fh:
+        resp = requests.post(   # æ³¨æ„ï¼šç”¨å¹²å‡€çš„ requestsï¼Œä¸å…±äº« sessionï¼Œé¿å…æŠŠ Cookie å‘ç»™å›¾åºŠ
+            "https://bucket.noymanga.com/api/upload_image",
+            headers={"origin": BASE, "referer": f"{BASE}/"},
+            data={"token": token},
+            files={"file": (path.rsplit("/", 1)[-1], fh)},
+            timeout=60,
+        )
+
+    payload = resp.json()
+    if payload.get("status") != "ok":
+        raise RuntimeError(f"ä¸Šä¼ å¤±è´¥: {payload}")
+    return payload["file"]
+```
+
+æ‹¿åˆ° `file` åç»§ç»­ï¼š[send_community.md](./send_community.md)ã€‚

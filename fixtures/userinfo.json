@@ -1,0 +1,31 @@
+{
+  "status": "ok",
+  "userinfo": {
+    "Email": "your@example.com",
+    "Integral": 41,
+    "Time": 1673114514,
+    "Uhash": "1343a10d7",
+    "Uid": 12345,
+    "Username": "your-name",
+    "Avatar": "avatar/91266-231a7416383ae44f5a6562ac75d79b84f3863d742152405be1be8b3cd6f4b19d.webp",
+    "Bg": "bg/91266-c558855dbf5fba56abea7eaf975a978249001c73a47c13774c65438f762f6ebb.webp",
+    "CommentLen": 0,
+    "Badge": [
+      {
+        "Id": 8,
+        "Name": "諾莉亞的凝視",
+        "Img": "https://bucket.239847.xyz/image/nry-bge.webp",
+        "Minimg": "https://bucket.239847.xyz/image/nry-bgem.webp",
+        "Des": "有這個徽章的人，應該積分都比較多"
+      },
+      {
+        "Id": 9,
+        "Name": "丸",
+        "Img": "https://bucket.239847.xyz/image/kimeemaru.webp",
+        "Minimg": "https://bucket.239847.xyz/image/kimeemaru-m.webp",
+        "Des": "2025 愚人節限定徽章"
+      }
+    ],
+    "Su": 0
+  }
+}

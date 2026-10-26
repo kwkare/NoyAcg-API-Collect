@@ -1,0 +1,20 @@
+{
+  "data": [
+    {
+      "Id": 8,
+      "Name": "諾莉亞的凝視",
+      "Img": "https://bucket.239847.xyz/image/nry-bge.webp",
+      "Minimg": "https://bucket.239847.xyz/image/nry-bgem.webp",
+      "Des": "有這個徽章的人，應該積分都比較多"
+    },
+    {
+      "Id": 9,
+      "Name": "丸",
+      "Img": "https://bucket.239847.xyz/image/kimeemaru.webp",
+      "Minimg": "https://bucket.239847.xyz/image/kimeemaru-m.webp",
+      "Des": "2025 愚人節限定徽章"
+    }
+  ],
+  "show": ["9", "8"],
+  "status": "ok"
+}

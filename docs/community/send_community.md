@@ -1,98 +1,121 @@
-# ·¢Ìû API£¨/api/v3/send_community£©
+# å‘å¸–
 
+åœ¨ç¤¾åŒºå‘ä¸€æ¡å¸¦å›¾ / ä¸å¸¦å›¾çš„å¸–å­ã€‚
 
-
-## ²ÎÊıËµÃ÷
-- `title`£º±êÌâ
-- `content`£ºÕıÎÄ
-- `platform`£º¿Í»§¶ËÀ´Ô´±êÊ¶£¬ÍøÒ³Í¨³£ÊÇ `web`£¬App ÊÇ `android`¡£
-- `image`£º
-  - Ö®Ç°Í¼´²·µ»ØµÄÎÄ¼şÃû `file`¡£
-  - ÄãÒª°ÑËüÆ´³É `image/<file>`¡£
-  - ÔÙ°ÑÈô¸ÉÕÅÍ¼Æ¬°ü³É JSON Êı×é×Ö·û´®´«¸øºó¶Ë¡£
-
----
-
-## ½Ó¿ÚĞÅÏ¢
-
-| ÏîÄ¿ | ÄÚÈİ |
+| é¡¹ç›® | å†…å®¹ |
 | --- | --- |
-| Endpoint | `https://beta.noyteam.online/api/v3/send_community` |
-| ÇëÇó·½Ê½ | `POST` |
+| Endpoint | `POST https://noymanga.com/api/v3/send_community` |
 | Content-Type | `application/x-www-form-urlencoded` |
-| ·µ»Ø¸ñÊ½ | `application/json` |
-| ¼øÈ¨·½Ê½ | Cookie£¨`NOY_SESSION`£©|
+| é‰´æƒ | Cookie `NOY_SESSION` |
+| æ ¡éªŒ | âš ï¸ 2026-03 è®°å½•ï¼Œæœªå¤æµ‹ |
 
----
+> âš ï¸ è¿™æ˜¯**å†™æ“ä½œ**ï¼Œä¼šåœ¨ç«™ç‚¹ä¸Šäº§ç”ŸçœŸå®å†…å®¹ã€‚æµ‹è¯•æ—¶è¯·å‘åˆ°è‡ªå·±èƒ½åˆ çš„åœ°æ–¹ï¼Œå¹¶éµå®ˆç¤¾åŒºè§„åˆ™ï¼›ä¸è¦ç”¨å®ƒåˆ·å¸–ã€‚
 
-## ÇëÇó²ÎÊı£¨±íµ¥£©
+## è¯·æ±‚å‚æ•°ï¼ˆè¡¨å•ï¼‰
 
-| ×Ö¶Î | ÀàĞÍ | ±ØÌî | ËµÃ÷ |
+| å­—æ®µ | ç±»å‹ | å¿…å¡« | è¯´æ˜ |
 | --- | --- | --- | --- |
-| `title` | string | ÊÇ | ±êÌâ |
-| `content` | string | ÊÇ | ÕıÎÄ |
-| `image` | string | ·ñ | JSON Êı×é×Ö·û´®£¬ÀıÈç `["image/91266-xxx.webp"]` |
-| `platform` | string | ÊÇ | `web` / `android` |
+| `title` | string | æ˜¯ | æ ‡é¢˜ |
+| `content` | string | æ˜¯ | æ­£æ–‡ |
+| `image` | string | å¦ | **JSON æ•°ç»„çš„å­—ç¬¦ä¸²**ï¼Œå…ƒç´ ä¸º `image/<file>` |
+| `platform` | string | æ˜¯ | `web`ï¼ˆç½‘é¡µç«¯ï¼‰/ `android`ï¼ˆAppï¼‰ |
 
-### `image` ²ÎÊıËµÃ÷
-¼ÙÉèÉÏ´«½Ó¿Ú·µ»Ø£º
+### `image` å­—æ®µæœ€å®¹æ˜“è¸©å‘
+
+ä¸Šä¼ æ¥å£è¿”å›çš„æ˜¯çº¯æ–‡ä»¶åï¼š
+
 ```json
-{ "file": "91266-xxxx.webp", "status": "ok" }
+{ "file": "91266-xxx.webp", "status": "ok" }
 ```
-ÄÇÃ´·¢ÌûÊ±Ó¦¸Ã´«£º
-- `image` = `["image/91266-xxxx.webp"]`
 
-¶àÍ¼¾ÍÊÇ£º
-- `image` = `["image/a.webp","image/b.webp"]`
+å‘å¸–æ—¶å¿…é¡»è‡ªå·±æ‹¼ä¸Šå‰ç¼€ã€å†åºåˆ—åŒ–æˆ JSON å­—ç¬¦ä¸²ï¼š
 
----
+| å•å›¾ | `image=["image/91266-xxx.webp"]` |
+| --- | --- |
+| å¤šå›¾ | `image=["image/a.webp","image/b.webp"]` |
 
-## ÏìÓ¦
-³É¹¦Ê¾Àı£º
+å¸¸è§é”™è¯¯ï¼š
+
+- åªä¼ æ–‡ä»¶åï¼ˆæ¼ `image/` å‰ç¼€ï¼‰â†’ å¸–å­å‘å‡ºå»äº†ä½†æ²¡å›¾ï¼›
+- ä¼ çœŸæ­£çš„æ•°ç»„ç±»å‹ï¼ˆ`image[]=...`ï¼‰â†’ åç«¯æ”¶ä¸åˆ°ï¼›
+- ä¼ äº† JSON ä½†æ²¡ url-encode â†’ æœåŠ¡ç«¯è§£æå¤±è´¥ã€‚
+
+## æˆåŠŸå“åº”
+
 ```json
 { "status": "ok" }
 ```
 
----
+| åœºæ™¯ | å“åº” |
+| --- | --- |
+| å‘å¸ƒæˆåŠŸ | `{"status":"ok"}` |
+| æœªç™»å½• | `{"status":"login"}` âš ï¸ æœªå®æµ‹ |
+| å†…å®¹è¢«æ‹’ï¼ˆé•¿åº¦ / æ•æ„Ÿè¯ / é¢‘ç‡ï¼‰ | `{"status":"error"}` âš ï¸ å…·ä½“åŸå› ä¸å›ä¼  |
 
-## Ê¾Àı
+æ¥å£**ä¸è¿”å›æ–°å¸– ID**ï¼Œè¦ç¡®è®¤å‘å¸ƒç»“æœåªèƒ½å»ç¤¾åŒºåˆ—è¡¨é¡µæˆ–è‡ªå·±çš„ä¸»é¡µæŸ¥ã€‚
 
-### curl
+## ç¤ºä¾‹
+
+### curlï¼ˆç½‘é¡µç«¯ï¼‰
+
 ```bash
-curl "https://beta.noyteam.online/api/v3/send_community" \
+BASE=https://noymanga.com
+
+curl -s "$BASE/api/v3/send_community" \
   -X POST \
   -H "content-type: application/x-www-form-urlencoded" \
-  -b "NOY_SESSION=<ÄãµÄ»á»°>" \
-  --data-urlencode "title=ÔÙ²âapi»ı·ÖµÃÍê" \
-  --data-urlencode "content=ÕıÎÄ´øÍ¼²âÊÔ" \
+  -b "NOY_SESSION=xxxx" \
+  --data-urlencode "title=æµ‹è¯•æ ‡é¢˜" \
+  --data-urlencode "content=ä¸€æ¡çº¯æ–‡æœ¬å¸–" \
   --data-urlencode "image=[\"image/91266-13025882b9402bd576b628a1030433a6388156d5aaeccb40362960af47a4aa79.webp\"]" \
   --data-urlencode "platform=web"
 ```
 
-### PowerShell£¨curl.exe£©
+### PowerShell
+
+`curl.exe` åœ¨ PowerShell é‡Œè¦é¢å¤–æ³¨æ„å¼•å·ï¼Œ`image` çš„ JSON é‡Œæ—¢æœ‰åŒå¼•å·åˆæœ‰æ–¹æ‹¬å·ï¼š
+
 ```powershell
 $img = "91266-13025882b9402bd576b628a1030433a6388156d5aaeccb40362960af47a4aa79.webp"
 
-curl.exe "https://beta.noyteam.online/api/v3/send_community" `
+curl.exe "https://noymanga.com/api/v3/send_community" `
   -X POST `
   -H "content-type: application/x-www-form-urlencoded" `
-  -b "NOY_SESSION=<ÄãµÄ»á»°>" `
-  --data-urlencode "title=ÔÙ²âapi»ı·ÖµÃÍê" `
-  --data-urlencode "content=ÕıÎÄ´øÍ¼²âÊÔ" `
-  --data-urlencode "image=[\"image/$img\"]" `
+  -b "NOY_SESSION=xxxx" `
+  --data-urlencode "title=æµ‹è¯•æ ‡é¢˜" `
+  --data-urlencode "content=ä¸€æ¡çº¯æ–‡æœ¬å¸–" `
+  --data-urlencode "image=[`"image/$img`"]" `
   --data-urlencode "platform=android"
 ```
 
----
+### Python
 
-## ³£¼ûÎÊÌâ
+```python
+import json
+import requests
 
-- ·µ»Ø `status=ok` µ«Ã»Í¼£º
-  - ¼ì²é `image` ÀïÊÇ·ñ´øÁË `image/` Ç°×º¡£
-  - ¼ì²é `image` ÊÇ·ñÊÇ JSON Êı×é¡°×Ö·û´®¡±£¬²¢ÇÒ±»ÕıÈ· url-encode¡£
-
-- ·¢³öÈ¥±ä³É¿ÕÌû£º
-  - ¼ì²é Content-Type ÊÇ·ñÊÇ `application/x-www-form-urlencoded`¡£
-  - ¼ì²é `title/content` ÊÇ·ñÕæµÄ´«ÁË£¨²»ÒªÓÃ JSON body£©¡£
+BASE = "https://noymanga.com"
 
 
+def send_community(session: requests.Session, title: str, content: str,
+                   files: list[str] | None = None, platform: str = "web") -> bool:
+    data = {"title": title, "content": content, "platform": platform}
+    if files:
+        data["image"] = json.dumps([f"image/{f}" for f in files])
+    resp = session.post(f"{BASE}/api/v3/send_community", data=data, timeout=30)
+    return resp.json().get("status") == "ok"
+```
+
+## å®Œæ•´é“¾è·¯
+
+```text
+POST /api/get_image_bucket_token        â†’ token
+POST bucket.noymanga.com/api/upload_image (token + file) â†’ file
+POST /api/v3/send_community (image=["image/<file>"])     â†’ ok
+```
+
+## å¤‡æ³¨
+
+- `platform` ç›®å‰åªè§‚å¯Ÿåˆ° `web` / `android`ï¼Œå…¶ä»–å€¼æœªéªŒè¯ âš ï¸ã€‚
+- æ­£æ–‡æ˜¯å¦æ”¯æŒ Markdown / HTML æœªç¡®è®¤ï¼›æŠ“åŒ…æ—¶å‰ç«¯å‘çš„æ˜¯çº¯æ–‡æœ¬ âš ï¸ã€‚
+- æ ‡é¢˜å’Œæ­£æ–‡é•¿åº¦ä¸Šé™æœªæµ‹ï¼›è¶…å‡ºåå¤§æ¦‚ç‡ä¸º `status: error`ã€‚
