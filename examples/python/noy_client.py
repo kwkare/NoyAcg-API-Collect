@@ -10,6 +10,8 @@
     export NOY_EMAIL=you@example.com NOY_PASS=...   # 或者给账号密码现登
 
     python noy_client.py whoami
+    python noy_client.py ads
+    python noy_client.py signin
     python noy_client.py home --adult false
     python noy_client.py badges
     python noy_client.py toggle-badge 8 --yes
@@ -67,17 +69,23 @@ class NoyClient:
 
     # ---------------------------------------------------------------- 内部
 
-    def _post(self, path: str, *, data: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _post(
+        self,
+        path: str,
+        *,
+        data: dict[str, Any] | None = None,
+        ok_statuses: tuple[Any, ...] = ("ok",),
+    ) -> dict[str, Any]:
         resp = self.session.post(f"{self.base_url}{path}", data=data, timeout=self.timeout)
         resp.raise_for_status()
         payload = resp.json()
-        self._raise_for_status(payload)
+        self._raise_for_status(payload, ok_statuses)
         return payload
 
     @staticmethod
-    def _raise_for_status(payload: dict[str, Any]) -> None:
+    def _raise_for_status(payload: dict[str, Any], ok_statuses: tuple[Any, ...] = ("ok",)) -> None:
         status = payload.get("status")
-        if status == "ok":
+        if status in ok_statuses:
             return
         if status == "login":
             raise AuthRequired("会话失效（status=login），请重新登录")
@@ -109,6 +117,14 @@ class NoyClient:
 
     def userinfo(self) -> dict[str, Any]:
         return self._post("/api/v3/userinfo").get("userinfo", {})
+
+    def ads(self) -> list[dict[str, Any]]:
+        """首页广告位。注意：不传 allow-adult 时等同于 false，不会返回成人向素材。"""
+        return self._post("/api/v3/ads").get("data", [])
+
+    def signin_record(self) -> dict[str, Any]:
+        """签到记录。这个接口的 status 是数字 200，所以单独放行。"""
+        return self._post("/api/v4/signin/record", ok_statuses=("ok", 200))
 
     def badges(self) -> dict[str, Any]:
         payload = self._post("/api/badge")
@@ -179,6 +195,8 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("whoami", help="打印用户信息摘要")
+    sub.add_parser("ads", help="首页广告位")
+    sub.add_parser("signin", help="签到记录（只读）")
 
     p_home = sub.add_parser("home", help="首页聚合数据")
     p_home.add_argument("--out", help="把原始 JSON 写到这里")
@@ -215,6 +233,15 @@ def main(argv: list[str] | None = None) -> int:
                     indent=2,
                 )
             )
+
+        elif args.cmd == "ads":
+            for ad in client.ads():
+                host = ad["url"].split("/")[2] if "//" in ad["url"] else ad["url"]
+                print(f"{host:24} {ad['img']}")
+
+        elif args.cmd == "signin":
+            rec = client.signin_record()
+            print(f"连续签到 {rec.get('continuous')} 天，今天已签到：{rec.get('today')}")
 
         elif args.cmd == "home":
             data = client.home()
