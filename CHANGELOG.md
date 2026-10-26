@@ -2,6 +2,26 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，版本号取「整理批次（年.月.日）」而不是语义化版本。
 
+## 2026.10.27-c — 编辑帖子与点赞实测
+
+两个之前只有「从 bundle 挖到的参数」的写接口，现在都跑通了。
+
+### 新增实测结论
+
+- **`POST /api/v3/edit_community_post` 升 ✅**（`{id, title, content}`）：响应只有 `{"status":"ok"}`，要回读详情确认。实测把帖子正文从一个表情包改成两个：
+  - `content` 更新成功，`time`（发布时间）**不变**、不会把帖子顶上去；
+  - `edit` 字段由 `0` 变成当前时间戳 → 证实 `Post.edit` 是**最后编辑时间**、`0` 表示从未编辑；
+  - **改不了图片和 `spoiler`**（实测 6 张图与模糊下标原样保留）。
+- **`POST /api/v3/community_like` 升 ✅**（`{cid}`）：返回 `{"is_like":bool,"status":"ok"}`，是 **toggle**；`like` 计数与 `is_like` 同步 `0→1→0`。
+  - ⚠️ **不校验 cid**：传 `999999999` 或不传都返回 `is_like:true`，但目标帖子毫无变化（不像 `set_badge_show` 会写脏数据）。别用返回值判断成功，回读帖子或自己保证 ID 正确。
+
+### 变更
+
+- `docs/community/post_detail.md` 新增「编辑帖子」「点赞」两节，含前后对比表。
+- `docs/community/community_list.md`：`Post.edit` 语义从「未确认」改为「最后编辑时间戳」。
+- `README.md` 状态表补两行，`openapi.yaml` 补 2 个 path（`LikeResult` schema）。
+- `fixtures/like-result.json` 新增。
+
 ## 2026.10.27-b — 浏览与讯息实测
 
 把「看」的部分补齐：楼中楼、消息中心三类讯息。

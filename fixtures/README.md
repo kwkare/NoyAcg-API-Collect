@@ -17,6 +17,7 @@
 | `post-detail-sample.json` | `POST /api/v4/community/post/<id>` | 2026-10-27 | 帖子详情 + 1 条评论。作者 uid / 头像 / 图床文件名已打码 |
 | `comment-replies-sample.json` | `POST /api/v4/community/post/<id>/comment/<rid>/replies` | 2026-10-27 | 楼中楼列表，保留 `root_id` / `reply_id` 的真实关系（`reply_id` ≠ `root_id`） |
 | `msg-count.json` | `POST /api/v4/msg/count` | 2026-10-27 | 未读计数（实测全 0） |
+| `like-result.json` | `POST /api/v3/community_like` | 2026-10-27 | 点赞 toggle 的返回形态（`is_like` 表示操作后的状态） |
 | `msg-comment-reply-sample.json` | `POST /api/v3/get_msg`（`type=reply`） | 2026-10-27 | 评论回覆：`book` 字典 + `comment` 列表的结构 |
 | `msg-community-reply-sample.json` | `POST /api/v3/get_msg`（`type=community_reply`） | 2026-10-27 | 社區回覆：`community` 字典 + 80 条/页的列表结构 |
 | `unauthorized.json` | 任意需要鉴权的接口 | 2026-10-26 | 会话失效时的统一响应 `{"status":"login"}` |

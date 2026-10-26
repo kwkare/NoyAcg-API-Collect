@@ -585,6 +585,70 @@ paths:
                   - $ref: '#/components/schemas/MsgCommunityReplyResult'
                   - $ref: '#/components/schemas/MsgSysmsgResult'
 
+  /api/v3/edit_community_post:
+    post:
+      tags: [community]
+      summary: 编辑帖子
+      description: |
+        只能改标题与正文，**改不了图片和 `spoiler`**。响应只有 `{"status":"ok"}`，需回读详情确认。
+
+        实测：`time`（发布时间）不变，`Post.edit` 变为当前时间戳。
+      operationId: editCommunityPost
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [id, title, content]
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 编辑结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleResult'
+
+  /api/v3/community_like:
+    post:
+      tags: [community]
+      summary: 点赞 / 取消点赞（toggle）
+      description: |
+        开关式：调用一次翻转一次，返回 `{"is_like":bool,"status":"ok"}`。
+
+        ⚠️ 不校验 `cid`：不存在的 ID 也返回 `is_like:true`，但目标帖子没有任何变化。
+        别用返回值判断成功，要么回读帖子，要么确保 ID 正确。
+      operationId: toggleCommunityLike
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [cid]
+              properties:
+                cid:
+                  type: integer
+                  description: 帖子 ID
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 点赞状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LikeResult'
+
 components:
   securitySchemes:
     session:
@@ -1001,7 +1065,8 @@ components:
             由服务端判定，发帖时无法指定。
         edit:
           type: integer
-          description: 编辑相关标记，语义未确认
+          format: int64
+          description: 最后编辑时间戳（unix 秒），0 表示从未编辑
 
     Comment:
       type: object
@@ -1297,6 +1362,16 @@ components:
               description: 系统消息条目结构未观察到（实测恒为空）
               items:
                 type: object
+
+    LikeResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        is_like:
+          type: boolean
+          description: 操作后的点赞状态（toggle 结果）
 
     UploadTokenResult:
       type: object

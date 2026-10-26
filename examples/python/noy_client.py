@@ -17,6 +17,8 @@
     python noy_client.py post 78930             # 帖子详情 + 评论
     python noy_client.py msg --kind community   # 未读计数 + 社区回覆
     python noy_client.py replies 41029 445567   # 楼中楼
+    python noy_client.py edit 78930 --title 图 --content "[noygirl:yeah]" --yes
+    python noy_client.py like 78930 --yes       # 点赞 toggle
     python noy_client.py reply 78930 "你好" --yes
     python noy_client.py home --adult false
     python noy_client.py badges
@@ -155,6 +157,15 @@ class NoyClient:
         types = {"comment": "reply", "community": "community_reply", "system": "sysmsg"}
         return self._post("/api/v3/get_msg", data={"page": page, "type": types[kind], "v": 3})
 
+    def edit_post(self, post_id: int, title: str, content: str) -> bool:
+        """编辑帖子（写操作）。只能改标题与正文，图片和 spoiler 改不了。"""
+        self._post("/api/v3/edit_community_post", data={"id": post_id, "title": title, "content": content})
+        return True
+
+    def like(self, post_id: int) -> bool:
+        """点赞 toggle（写操作）：返回操作后的 is_like。"""
+        return bool(self._post("/api/v3/community_like", data={"cid": post_id}).get("is_like"))
+
     def reply(self, post_id: int, text: str, reply_id: int = -1) -> bool:
         """发评论 / 回复（写操作）。reply_id=-1 为顶层评论。"""
         self._post(
@@ -253,6 +264,16 @@ def main(argv: list[str] | None = None) -> int:
     p_replies.add_argument("rid", type=int, help="根评论 ID")
     p_replies.add_argument("--page", type=int, default=1)
 
+    p_edit = sub.add_parser("edit", help="编辑帖子（默认 dry-run）")
+    p_edit.add_argument("id", type=int)
+    p_edit.add_argument("--title", required=True)
+    p_edit.add_argument("--content", required=True)
+    p_edit.add_argument("--yes", action="store_true")
+
+    p_like = sub.add_parser("like", help="点赞 toggle（默认 dry-run）")
+    p_like.add_argument("id", type=int)
+    p_like.add_argument("--yes", action="store_true")
+
     p_reply = sub.add_parser("reply", help="发评论（默认 dry-run）")
     p_reply.add_argument("id", type=int, help="帖子 ID")
     p_reply.add_argument("text")
@@ -345,6 +366,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"共 {data.get('count')} 条，末页={data.get('over')}")
             for c in (data.get("replies") or [])[:10]:
                 print(f"  - {c['rid']} {c['username']} → {c.get('reply_username') or ''}: {c['content'][:36]}")
+
+        elif args.cmd == "edit":
+            if not args.yes:
+                print(f"[dry-run] 将把 #{args.id} 改为标题={args.title!r} 正文={args.content!r}（加 --yes 提交）")
+            else:
+                client.edit_post(args.id, args.title, args.content)
+                post = (client.post_detail(args.id).get("post") or {})
+                print(f"已提交；当前正文={post.get('content')!r} edit={post.get('edit')}")
+
+        elif args.cmd == "like":
+            if not args.yes:
+                print(f"[dry-run] 将切换 #{args.id} 的点赞状态（加 --yes 执行）")
+            else:
+                state = client.like(args.id)
+                print(f"操作完成，is_like={state}")
 
         elif args.cmd == "reply":
             if not args.yes:

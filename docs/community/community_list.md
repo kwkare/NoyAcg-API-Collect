@@ -68,7 +68,7 @@
 | `is_like` | bool | 当前用户是否点过赞 |
 | `su` | int | 语义未知，样例恒为 `0` ⚠️ |
 | `spoiler` | string | **需要模糊的图片下标**，逗号分隔（如 `"0,1,2,3,4,5"`）；空串代表不模糊。由服务端判定，发帖时无法指定 |
-| `edit` | int | 编辑相关标记，样例为 `0`，语义未确认 ⚠️ |
+| `edit` | int | **最后编辑时间戳**（unix 秒），`0` = 从未编辑（实测：编辑一次后变成当前时间） |
 
 脱敏样例：[`fixtures/community-list-sample.json`](../../fixtures/community-list-sample.json)。
 

@@ -169,8 +169,48 @@ curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
   -d "platform=web" -d "hide_ip=false"
 ```
 
+## 五、编辑帖子
+
+```http
+POST /api/v3/edit_community_post
+id=78930
+title=图
+content=[noygirl:yeah][noygirl:haha]
+```
+
+响应：`{"status":"ok"}`，**不返回帖子内容**，要回读详情确认。
+
+实测（把自己的帖子正文从一个表情包改成两个）：
+
+| 字段 | 编辑前 | 编辑后 |
+| --- | --- | --- |
+| `content` | `[noygirl:yeah]` | `[noygirl:yeah][noygirl:haha]` |
+| `edit` | `0` | `1793033067`（**当前时间戳**） |
+| `time`（发布时间） | `1793030753` | 不变 |
+| `image` / `spoiler` | 6 张 / `"0,1,2,3,4,5"` | 不变 |
+
+结论：
+
+- `edit = 0` 表示**从未编辑**，否则是**最后编辑时间**——这解释了列表里那个语义不明的字段；
+- 只能改 `title` / `content`，**改不了图片和 `spoiler`**；
+- 编辑不会把帖子顶到前面（`time` 不变）。
+
+## 六、点赞
+
+```http
+POST /api/v3/community_like
+cid=78930
+```
+
+```json
+{ "is_like": true, "status": "ok" }
+```
+
+- **开关式**：再调一次就取消点赞，返回 `{"is_like":false,"status":"ok"}`；
+- 帖子对象的 `like` 计数随之 `0 → 1 → 0`，`is_like` 同步翻转；
+- ⚠️ **不校验 `cid`**：传 `999999999` 或不传 `cid` 都返回 `{"is_like":true,"status":"ok"}`，但目标帖子的 `like` / `is_like` **没有任何变化**（比 `set_badge_show` 干净，不会污染数据）。所以别用返回值判断「点赞成功」，要么回读帖子，要么信任自己没传错 ID。
+
 ## 相关
 
 - 发帖：[send_community.md](./send_community.md)
-- 编辑帖子：`POST /api/v3/edit_community_post`（`{id, title, content}`，参数来自前端 bundle，**未实测** 🚧）
-- 点赞：`POST /api/v3/community_like`（`{cid}`，**未实测** 🚧）
+- 帖子列表：[community_list.md](./community_list.md)
