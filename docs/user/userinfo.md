@@ -1,6 +1,6 @@
 # 用户信息
 
-读当前登录账户的资料、积分和「正在佩戴」的徽章。
+读当前登录账户的资料、积分与徽章列表。
 
 | 项目 | 内容 |
 | --- | --- |
@@ -56,12 +56,14 @@
 | `userinfo.Avatar` | string | 头像**相对路径**（`avatar/xxx.webp`），需自行拼图床域名 |
 | `userinfo.Bg` | string | 背景图**相对路径**（`bg/xxx.webp`） |
 | `userinfo.CommentLen` | int | 评论数（实测 `0`） |
-| `userinfo.Badge` | `Badge[]` | 当前**佩戴中**的徽章，与 `/api/badge` 的 `show` 一一对应 |
+| `userinfo.Badge` | `Badge[]` | **全部可用徽章**（与 `/api/badge` 的 `data` 同集合），**不反映佩戴状态** |
 | `userinfo.Su` | int | 语义未知，实测恒为 `0` ⚠️ |
 
-### ⚠️ `Badge[].Id` 恒为 `0`
+### ⚠️ 两个坑：`Id` 恒为 `0`，且不含佩戴状态
 
-这是本次实测最重要的发现：`userinfo.Badge` 里的每一项 `Id` **都是 `0`**，即使同一枚徽章在 [`/api/badge`](./badge.md) 里明明是 `8`。
+坑一：`userinfo.Badge` 里的每一项 `Id` **都是 `0`**，即使同一枚徽章在 [`/api/badge`](./badge.md) 里明明是 `8`。
+
+坑二：这个数组是**全部徽章**，不是佩戴中的。实测在 `show` 只有 4 项时，`Badge` 依然返回 5 项；因此不能拿它判断戴没戴，要看 `/api/badge` 的 `show`。
 
 实测对照（同一次请求）：
 
@@ -106,7 +108,7 @@ BASE=https://noymanga.com
 curl -s -X POST "$BASE/api/v3/userinfo" -b "NOY_SESSION=xxxx" |
   python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('status'), d.get('userinfo',{}).get('Integral'))"
 
-# 佩戴中的徽章（Id 全是 0，要真实 ID 请再查 /api/badge）
+# 徽章列表（Id 全是 0；是否佩戴要看 /api/badge 的 show）
 curl -s -X POST "$BASE/api/v3/userinfo" -b "NOY_SESSION=xxxx" |
   python3 -c "import json,sys; d=json.load(sys.stdin); [print(b['Id'], b['Name']) for b in d.get('userinfo',{}).get('Badge',[])]"
 ```

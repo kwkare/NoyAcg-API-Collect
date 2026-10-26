@@ -41,7 +41,7 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `data` | `Badge[]` | 账户可用的全部徽章（实测 5 枚，数量随账号不同） |
-| `show` | `string[]` | 正在展示的徽章 **Id，是字符串**；实测 4 个，顺序不等于 `data` 顺序 |
+| `show` | `string[]` | 正在展示的徽章 **Id，是字符串**；顺序是「佩戴操作顺序」（新增的追加在末尾），不是按 ID 排序；实测 4 个 |
 | `status` | string | `ok` / `login` / `error` |
 
 ### Badge
@@ -100,4 +100,4 @@ for b in d.get('data', []):
 
 - `data` 与 `show` 是「集合 + 子集」关系，佩戴状态直接读 `show`，别自己另存。
 - 徽章图片全部在 `bucket.noymanga.com`，老文档写的 `bucket.239847.xyz` 已废弃。
-- 佩戴开关见 [set_badge_show.md](./set_badge_show.md)。
+- 佩戴开关见 [set_badge_show.md](./set_badge_show.md)。注意那个接口不校验 ID，任何字符串都会被写进 `show`。

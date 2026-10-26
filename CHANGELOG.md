@@ -25,9 +25,15 @@
 - `fixtures/` 新增 `home-2026-10-sample.json`、`ads.json`、`signin-record.json`，并按新实测更新 `badge.json`、`userinfo.json`。
 - 图床家族的两个未验证端点线索：`/bucket/api/upload_avatar`、`/bucket/api/upload_bg`。
 
+### 写操作实测（经账号所有者同意）
+
+- `/api/v3/set_badge_show` 升为 ✅：完整做了 `12` 号的「开 → 读 → 关 → 读」往返，确认它是**数组 toggle**（有则删、无则加，新增追加到末尾），响应恒为 `{"status":"ok"}`。
+- 顺带查出上游文档没写的坑：**服务端完全不校验 ID**。`id=114514`、甚至不带 `id`（等于空串）都会被原样写进 `show` 数组。测试时这两个值确实进了数组，已用「再切一次」全部清除，最终 `show` 与操作前逐项一致（`["10","11","9","8"]`）。
+- 因此 `userinfo.Badge` 的语义也被修正：它是**全部徽章**，不是佩戴中的（实测 `show` 4 项时 `Badge` 仍 5 项）。
+
 ### 未完成
 
-- `/api/v3/set_badge_show`、`/api/v3/send_community` 仍是 ⚠️：都是写操作，本轮刻意没有触发（需要账号所有者同意后做一次往返验证）。
+- `/api/v3/send_community` 仍是 ⚠️：会在站点产生真实内容，本轮没有触发。
 - 执行签到、积分明细、任务列表仍未找到。
 
 ## 2026.10.26-a — 文档校正与工程化整理（本 fork 首个版本）

@@ -194,8 +194,11 @@ paths:
       summary: 切换徽章佩戴状态
       operationId: toggleBadgeShow
       description: |
-        **开关式（toggle）**：同一个 `id` 调一次翻转一次，没有显式的「设为佩戴/取消」参数，
-        因此重试不幂等。历史上传入不存在的 `id` 也返回 `ok`（未复测）。
+        **开关式（toggle）**：同一个 `id` 调一次翻转一次（在 `show` 数组里有则删、无则加，新增追加到末尾），
+        没有显式的「设为佩戴/取消」参数，因此重试不幂等。
+
+        ⚠️ **不校验 ID**：任何字符串（不存在的 `114514`、空串）都会被原样写进 `show`，
+        响应仍是 `{"status":"ok"}`；清理办法就是再切一次同样的值。脚本请先用 `/api/badge` 校验 ID。
       requestBody:
         required: true
         content:
@@ -206,7 +209,7 @@ paths:
               properties:
                 id:
                   type: integer
-                  description: 徽章 ID，取自 `/api/badge` 的 `data[].Id`
+                  description: 徽章 ID，取自 `/api/badge` 的 `data[].Id`；务必先校验，服务端不会检查
                   examples: [8]
       responses:
         '4XX':
@@ -586,7 +589,7 @@ components:
           description: 评论数，样例为 0（待确认）
         Badge:
           type: array
-          description: 当前佩戴中的徽章
+          description: 全部可用徽章（与 `/api/badge` 的 data 同集合），**不反映佩戴状态**；佩戴状态看 `/api/badge` 的 show
           items:
             $ref: '#/components/schemas/Badge'
         Su:

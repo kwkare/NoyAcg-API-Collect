@@ -32,7 +32,7 @@
 | 首页广告位 | `POST /api/v3/ads` | Cookie | ✅ 2026-10-26 | [ads](./docs/ads.md) |
 | 用户信息 | `POST /api/v3/userinfo` | Cookie | ✅ 2026-10-26 | [userinfo](./docs/user/userinfo.md) |
 | 徽章列表 | `POST /api/badge` | Cookie | ✅ 2026-10-26 | [badge](./docs/user/badge.md) |
-| 徽章佩戴开关 | `POST /api/v3/set_badge_show` | Cookie | ⚠️ 待复测（写法为 toggle，写前先读） | [set_badge_show](./docs/user/set_badge_show.md) |
+| 徽章佩戴开关 | `POST /api/v3/set_badge_show` | Cookie | ✅ 2026-10-26（toggle，且不校验 ID） | [set_badge_show](./docs/user/set_badge_show.md) |
 | 签到记录 | `POST /api/v4/signin/record` | Cookie | ✅ 2026-10-26 | [signin](./docs/task/signin.md) |
 | 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | ✅ 2026-10-26 | [get_image_bucket_token](./docs/community/get_image_bucket_token.md) |
 | 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | 🟡 空 token 403 已实测 | [upload_image](./docs/community/upload_image.md) |
@@ -73,6 +73,8 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 | `Book.Len` 不是枚举 | 实测 R18 作品取到 `5`~`194`，是「长度/话数」而非「1=短/2=长」 |
 | `userinfo.Integral` 是**小数** | 实测 `1090.7`，按 int 建模会丢精度 |
 | `userinfo.Badge[].Id` **恒为 `0`** | 服务端不填这个字段，要真实 ID 只能查 `/api/badge` |
+| `userinfo.Badge` **不是**佩戴中的徽章 | 它是全部徽章（实测 `show` 只有 4 项时仍返回 5 项），佩戴状态只看 `/api/badge.show` |
+| `set_badge_show` **不校验 ID** | 任何字符串（包括 `114514`、空串）都会被写进 `show`，只能靠「再切一次」清掉 |
 | 新增 `/api/v3/ads`、`/api/v4/signin/record` | 广告位与签到记录，此前完全没记录 |
 | 徽章图床从 `bucket.239847.xyz` 换到 `bucket.noymanga.com` | 老文档里的图片 URL 全部失效 |
 
