@@ -20,7 +20,8 @@
     python noy_client.py edit 78930 --title 图 --content "[noygirl:yeah]" --yes
     python noy_client.py like 78930 --yes       # 点赞 toggle
     python noy_client.py reply 78930 "你好" --yes
-    python noy_client.py home --adult false
+    python noy_client.py home --adult false   # 默认带 v=3，包含 stream
+    python noy_client.py login                # 校验 NOY_SESSION 或账号密码
     python noy_client.py badges
     python noy_client.py toggle-badge 8 --yes
     python noy_client.py upload ./pic.jpg

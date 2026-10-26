@@ -19,6 +19,11 @@ CI 会跑同样的检查，另外还有 markdownlint。
 4. **失败分支必须写**。每个端点至少有：成功、`status: error`、`status: login` 三种说明（该端点不支持某分支就注明"未观察到"）。
 5. **不要贴真实 Cookie、邮箱、Uid、Uhash**。样例里的个人信息一律替换为占位符，或直接用 `fixtures/` 里已脱敏的版本。
 
+## 抓包时的两条铁律
+
+1. **照抄前端的请求参数**，包括那些看起来没用的 `v=3`、`platform=web`、`hide_ip=false`。反例：`/api/home` 不带 `v=3` 就不返回 `stream`，曾让我们误判「番剧推荐已下线」。
+2. **区分「参数缺失」和「字段被删」**。字段消失时先怀疑参数，再怀疑服务端改版。
+
 ## 新增或修订一个端点
 
 1. 用浏览器 DevTools（Network → 右键请求 → Copy as cURL）抓一条真实请求，注意把 `Cookie` 里只保留 `NOY_SESSION=xxx`。

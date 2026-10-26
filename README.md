@@ -9,7 +9,7 @@
 | --- | --- |
 | Base URL | `https://noymanga.com` |
 | 旧域名 | `beta.noyteam.online` 已 **302** 跳转至新域名（2026-10-26 实测），旧文档里的示例地址全部失效 |
-| 鉴权 | Cookie `NOY_SESSION`，见 [NOY_SESSION](./docs/auth/noy_session.md) |
+| 鉴权 | Cookie `NOY_SESSION`，见 [会话机制](./docs/auth/session.md) |
 | 请求风格 | 全部 `POST`，表单 `application/x-www-form-urlencoded`；图床上传为 `multipart/form-data` |
 | 响应风格 | JSON，业务状态放在 `status` 字段：`ok` / `error` / `login`（签到接口是数字 `200`） |
 | 内容分级 | 请求头 `allow-adult: true`、`false`、`both`，**`/api/home` 不传时默认返回 R18** |
@@ -27,7 +27,7 @@
 | 接口 | 端点 | 鉴权 | 校验 | 文档 |
 | --- | --- | --- | --- | --- |
 | 登录 | `POST /api/login` | — | ✅ 2026-10-26 | [login](./docs/auth/login.md) |
-| 会话凭证 | Cookie `NOY_SESSION` | — | ✅ 2026-10-26 | [noy_session](./docs/auth/noy_session.md) |
+| 会话凭证 | Cookie `NOY_SESSION` | — | ✅ 2026-10-27（含 cookie 解剖 / 属性 / 吊销） | [session](./docs/auth/session.md) |
 | 首页聚合 | `POST /api/home` | Cookie | ✅ 2026-10-26 | [home](./docs/home.md) |
 | 首页广告位 | `POST /api/v3/ads` | Cookie | ✅ 2026-10-26 | [ads](./docs/ads.md) |
 | 用户信息 | `POST /api/v3/userinfo` | Cookie | ✅ 2026-10-26 | [userinfo](./docs/user/userinfo.md) |
@@ -77,7 +77,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 
 | 变化 | 影响 |
 | --- | --- |
-| `/api/home` **不再返回 `stream`** | 首页「動畫」区块空了；前端仍写 `f.stream ?? []`，所以静默隐藏而非报错 |
+| `/api/home` 的 **`stream` 要带 `v=3`** 才有 | 不带 `v=3` 时响应里根本没有这个 key，前端静默隐藏「動畫」区块——很像「功能下线」，其实是参数没带 |
 | `allow-adult` **缺省 = R18** | 忘记带请求头就会拿到成人向榜单，测试时容易误判 |
 | `Book` 新增 **`alias`** 字段 | 20 个字段了，解析器按固定下标取值会错位 |
 | `Book.Len` 不是枚举 | 实测 R18 作品取到 `5`~`194`，是「长度/话数」而非「1=短/2=长」 |
@@ -86,6 +86,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 | `userinfo.Badge` **不是**佩戴中的徽章 | 它是全部徽章（实测 `show` 只有 4 项时仍返回 5 项），佩戴状态只看 `/api/badge.show` |
 | `set_badge_show` **不校验 ID** | 任何字符串（包括 `114514`、空串）都会被写进 `show`，只能靠「再切一次」清掉 |
 | 新增 `/api/v3/ads`、`/api/v4/signin/record` | 广告位与签到记录，此前完全没记录 |
+| 登录接口可程序化使用 | `/api/login` 无验证码，账号密码直接换 30 天 Cookie；注册才需要极验 |
 | 写操作链路跑通：发帖 6 图 / 评论 / 签到 | 发帖**不返帖 ID**、评论**不返评论 ID**，都要回列表查；`spoiler` 由服务端判定 |
 | 徽章图床从 `bucket.239847.xyz` 换到 `bucket.noymanga.com` | 老文档里的图片 URL 全部失效 |
 
@@ -132,7 +133,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 ├── docs/                  人读文档，按域划分
 │   ├── home.md
 │   ├── ads.md
-│   ├── auth/              login / NOY_SESSION
+│   ├── auth/              login / session（cookie 机制）
 │   ├── user/              userinfo / badge / set_badge_show / messages
 │   ├── task/              signin（记录查询 + 执行签到）
 │   └── community/         图床 token / 上传 / 发帖 / 列表 / 详情与评论 / 表情包

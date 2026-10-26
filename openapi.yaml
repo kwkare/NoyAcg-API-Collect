@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: NoyAcg API（非官方整理）
-  version: 2026.10.26
+  version: 2026.10.27
   summary: noymanga.com 客户端 HTTP API 的非官方描述
   description: |
     NoyAcg（漫画・同人志社区）Web / App 客户端接口的非官方逆向整理，**仅供技术研究**。
@@ -13,6 +13,7 @@ info:
     - 业务状态放在响应体的 `status` 字段（`ok` / `error` / `login`），HTTP 状态码几乎恒为 `200`；
     - 鉴权靠 Cookie `NOY_SESSION`，由 `POST /api/login` 下发，有效期约 30 天；
     - 内容分级由请求头 `allow-adult` 控制，而不是账号配置；**`/api/home` 不传该头时默认返回 R18**。
+    - `/api/home` 还需要请求体 `v=3` 才会返回 `stream`（番剧推荐）。
 
     字段的校验状态（✅ 实测 / 🟡 部分实测 / ⚠️ 待复测）见仓库文档，本文件只描述结构与已知枚举。
   license:
@@ -96,11 +97,29 @@ paths:
       operationId: getHome
       description: |
         一次返回公告、四个榜单（`favDay` / `readDay` / `fs` / `proportion`）、番剧推荐和标签。
-        无请求体、无分页参数，响应约 40 KB。
+        无分页参数，响应约 40 KB。
 
-        `allow-adult: true` 只返回 R18，`false` 只返回全年龄，`both` 全给。
+        - `allow-adult: true` 只返回 R18，`false` 只返回全年龄，`both` 全给；**不传等同 `true`**。
+        - **请求体必须带 `v=3` 才会返回 `stream`**（前端真实调用是 `{v:3, stream_all:1}`）。
       parameters:
         - $ref: '#/components/parameters/AllowAdult'
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                v:
+                  type: integer
+                  enum: [3]
+                  description: 带 3 才返回 stream 字段
+                  examples: [3]
+                stream_all:
+                  type: integer
+                  enum: [1]
+                  description: 前端固定传 1；单独传无效果，作用未观察到
+                  examples: [1]
       responses:
         '4XX':
           description: 客户端侧异常（限流 / 参数不合法），具体码未整理
@@ -838,8 +857,7 @@ components:
             $ref: '#/components/schemas/Book'
         stream:
           type: array
-          deprecated: true
-          description: 2026-10 起 `/api/home` 不再返回该字段（连续 7 次请求确认）；前端按缺失处理并隐藏「動畫」区块
+          description: 番剧 / 流媒体推荐；**仅当请求体带 `v=3` 时出现**，否则响应里没有这个 key
           items:
             $ref: '#/components/schemas/Stream'
         tags:

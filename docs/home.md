@@ -5,11 +5,12 @@
 | 项目 | 内容 |
 | --- | --- |
 | Endpoint | `POST https://noymanga.com/api/home` |
-| Content-Type | `application/x-www-form-urlencoded`（无请求体，`Content-Length: 0`） |
+| Content-Type | `application/x-www-form-urlencoded` |
+| 请求体 | **必须带 `v=3`** 才会返回 `stream`，见下 |
 | 返回 | `application/json;charset=utf-8` |
 | 鉴权 | Cookie `NOY_SESSION`，**必需** |
 | 分级 | 请求头 `allow-adult`（默认值有坑，见下） |
-| 校验 | ✅ 2026-10-26 带登录态实测（8 次请求） |
+| 校验 | ✅ 2026-10-27 带登录态实测（含参数对比） |
 
 ## 请求头
 
@@ -34,9 +35,29 @@
 - `false` 与 `true` 的书单**零交集**（59 / 60 个 `Bid` 无重叠），不是「过滤掉一部分」，而是两套互斥内容池。
 - `tags` 跟着分级变，`false` 得到「冒險 / 奇幻 / 科幻…」，`true` 得到「蘿莉 / 全彩 / 長筒襪…」，`both` 是并集。做标签筛选时不能假设标签集合固定。
 
+## 请求体参数
+
+前端真实调用是 `D('/home', {v: 3, stream_all: 1})`，这两个参数不是可选的装饰：
+
+| 参数 | 必填 | 实测影响 |
+| --- | --- | --- |
+| `v` | **强烈建议** | `v=3` 时才会返回 `stream`（番剧推荐）；不带则**完全没有 `stream` 这个 key**。其余榜单不受影响 |
+| `stream_all` | 否 | 单独传没有任何效果；与 `v=3` 一起传与只传 `v=3` 的结果一致，具体作用未观察到 ⚠️ |
+
+四种组合的实测结果（同一账号、同一分钟）：
+
+| 请求体 | `stream` | 其它榜单 |
+| --- | --- | --- |
+| 无 | **不存在** | 正常（favDay 20 / readDay 20 / fs 20 / proportion 17） |
+| `v=3` | **10 条** | 相同 |
+| `stream_all=1` | 不存在 | 相同 |
+| `v=3&stream_all=1` | 10 条 | 相同 |
+
+> 踩坑记录：早期文档因为没带 `v=3`，连续 7 次抓取都没看到 `stream`，差点得出「番剧推荐已经下线」的错误结论。**抓包时务必照抄前端的请求参数**，别想当然地发空 body。
+
 ## 响应结构
 
-2026-10-26 实测的顶层字段：
+2026-10-27 实测的顶层字段：
 
 | 字段 | 类型 | 说明 | 条数（false / true） |
 | --- | --- | --- | --- |
@@ -45,11 +66,13 @@
 | `readDay` | `Book[]` | 日阅读榜 | 20 / 20 |
 | `fs` | `Book[]` | 推荐位，排序规则未确认 ⚠️ | 20 / 20 |
 | `proportion` | `Book[]` | 高质 / 编辑推荐，规则未确认 ⚠️ | 17 / 20 |
+| `stream` | `Stream[]` | 番剧 / 流媒体推荐，**仅当请求体带 `v=3`** | 10 / 10 |
 | `tags` | `string[]` | 当前分级下可用的标签 | 9 / 13 |
 | `status` | `string` | `ok` / `login` | — |
 
-> **`stream` 已经没有了。** 2026-03 的文档里它是「番剧 / 流媒体推荐」，现在 `/api/home` 不再返回这个 key（连续 7 次抓取确认）。前端代码仍写着 `f.stream ?? []`，取不到就整块不渲染——所以首页的「動畫」区块目前是空的，不是你的解析写错了。
-> 旧的完整快照（含 `stream`、79 本书）留在 [`fixtures/home.json`](../fixtures/home.json)，2026-10 的精简快照见 [`fixtures/home-2026-10-sample.json`](../fixtures/home-2026-10-sample.json)。
+> `stream` 的有无**只取决于请求体里有没有 `v=3`**，不是服务端下线了。前端拿到空数组时会静默隐藏「動畫」区块，所以现象上很像「没有了」。
+>
+> 快照：[`fixtures/home.json`](../fixtures/home.json)（2026-03 全量，79 本书 + 10 部番剧）、[`fixtures/home-2026-10-sample.json`](../fixtures/home-2026-10-sample.json)（2026-10 每榜 1 条）、[`fixtures/home-stream-sample.json`](../fixtures/home-stream-sample.json)（2026-10 的番剧条目）。
 
 条目数**不固定**：同一个账号连续请求，`proportion` 在 16~20 之间波动。不要用长度做断言。
 
@@ -96,6 +119,27 @@
 - `Pname` 在新样例里几乎全是 `"未知"`，当成人名字段用会出错。
 - `Ptag` 用空格分隔；`Stream.tags`（已下线）当年用逗号分隔。
 
+## Stream
+
+番剧 / 流媒体条目，只有带 `v=3` 时出现。
+
+| 字段 | 类型 | 说明 | 示例 |
+| --- | --- | --- | --- |
+| `sid` | int | 剧集 ID，实测 2026-10 在 91–100 区间 | `100` |
+| `name` | string | 剧名 | `"學生會也有洞！"` |
+| `des` | string | 剧情简介，可能很长（含换行与版权声明） | `"這裡是位於城鎮邊緣的升學學校…"` |
+| `tags` | string | 标签，**逗号分隔** | `"校園,喜劇,青春,日常"` |
+| `pages` | string | 可观看集号，逗号分隔；实测当前多为空串 | `""` |
+| `type` | int | 类型标识，样例中恒为 `0` ⚠️ | `0` |
+| `count` | int | 总集数 | `4` |
+| `time` | int | 创建时间（unix 秒） | `1792422903` |
+| `up_time` | int | 最后更新（unix 秒） | `1792914902` |
+| `f` | bool | 当前用户是否收藏（小写 `f`） | `false` |
+| `views` | int | 播放量 | `438` |
+| `favorites` | int | 收藏数 | `35` |
+
+> `Book` 用大写字段名（`F`、`Views`），`Stream` 用小写（`f`、`views`），这是服务端原样返回，不是笔误。
+
 ### 封面图
 
 接口**不返回**封面 URL，前端按下面的规律自己拼（实测可用）：
@@ -104,7 +148,7 @@
 https://img.noymanga.com/<Bid>/m1.webp
 ```
 
-番剧封面在另一套域名 `stream.noyteam.online/<sid>/cover.webp`（随 `stream` 下线一起失效）。
+番剧封面在另一套域名：`https://stream.noyteam.online/<sid>/cover.webp`（实测首页就是这么加载的）。
 
 ## 失败分支
 
@@ -119,11 +163,12 @@ https://img.noymanga.com/<Bid>/m1.webp
 ```bash
 BASE=https://noymanga.com
 
-# 全年龄榜（务必显式带头，否则拿到的是 R18）
+# 全年龄榜 + 番剧推荐（务必显式带头，否则拿到的是 R18；务必带 v=3，否则没有 stream）
 curl -s -X POST "$BASE/api/home" \
   -b "NOY_SESSION=xxxx" \
   -H "allow-adult: false" \
-  -H "content-type: application/x-www-form-urlencoded"
+  -H "content-type: application/x-www-form-urlencoded" \
+  -d "v=3&stream_all=1"
 
 # 对比两种分级的条目数与标签数
 for lvl in false true both; do

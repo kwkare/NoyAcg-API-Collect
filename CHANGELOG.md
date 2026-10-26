@@ -2,6 +2,31 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，版本号取「整理批次（年.月.日）」而不是语义化版本。
 
+## 2026.10.27-d — 认证机制 + 一处重要修正
+
+### 修正（自己打自己脸）
+
+- **`/api/home` 的 `stream` 从来没有下线**。前端真实调用是 `D('/home', {v:3, stream_all:1})`，**必须带 `v=3`** 才会返回 `stream`（10 条番剧）。之前「连续 7 次抓取都没有 → 番剧推荐已移除」的结论是错的：那 7 次都发了空 body。
+  - 已修正 `docs/home.md`（新增「请求体参数」章节 + 四种组合的实测对照表）、`README.md`、`openapi.yaml`；
+  - 教训写进 `CONTRIBUTING.md`：**抓包必须照抄前端的请求参数**。
+
+### 新增
+
+- `docs/auth/session.md`（合并并取代 `noy_session.md`）：cookie 三段结构解剖（`时间戳|载荷|HMAC`，120 字节、无明文 uid）、下发属性实测、登出吊销实测、第三方软件接入建议。
+- `docs/auth/login.md` 补充：`status` 三态（`ok` / `error` / `danger`）、**登录不需要验证码**、注册需极验 geetest、`/api/logout` 吊销会话、`/api/reset_passwd` 参数。
+- `fixtures/home-stream-sample.json`：2026-10 的番剧条目形态。
+
+### 认证相关实测结论
+
+- 所有请求体**没有** `uid` 字段，身份完全由 Cookie 推导；服务端据此给出 `Uid` / `Uhash` / 佩戴徽章 / `area` / IP。
+- Cookie 属性：`Path=/`、`Max-Age=2592000`，**缺 `HttpOnly`、`SameSite`、`Secure`** → 页面 JS 可直接读取（XSS 即可盗号），已写入安全评估。
+- 有效期不滑动：cookie 内签发时间戳固定为登录时刻。
+- `POST /api/logout` 之后同一 cookie 立即失效（服务端有会话表，不是纯无状态签名）。
+
+### 事故记录
+
+- 探测 `/api/logout` 时误发了一次 POST，把账号实际登出；旧 cookie 已被吊销无法恢复，需重新登录。**这个接口不该用它做「存在性探测」。**
+
 ## 2026.10.27-c — 编辑帖子与点赞实测
 
 两个之前只有「从 bundle 挖到的参数」的写接口，现在都跑通了。
