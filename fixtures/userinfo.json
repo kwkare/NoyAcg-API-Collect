@@ -2,29 +2,20 @@
   "status": "ok",
   "userinfo": {
     "Email": "your@example.com",
-    "Integral": 41,
-    "Time": 1673114514,
+    "Integral": 1090.7,
+    "Time": 1655471118,
     "Uhash": "1343a10d7",
     "Uid": 12345,
     "Username": "your-name",
-    "Avatar": "avatar/91266-231a7416383ae44f5a6562ac75d79b84f3863d742152405be1be8b3cd6f4b19d.webp",
-    "Bg": "bg/91266-c558855dbf5fba56abea7eaf975a978249001c73a47c13774c65438f762f6ebb.webp",
+    "Avatar": "avatar/91266-<sha>.webp",
+    "Bg": "bg/91266-<sha>.webp",
     "CommentLen": 0,
     "Badge": [
-      {
-        "Id": 8,
-        "Name": "諾莉亞的凝視",
-        "Img": "https://bucket.239847.xyz/image/nry-bge.webp",
-        "Minimg": "https://bucket.239847.xyz/image/nry-bgem.webp",
-        "Des": "有這個徽章的人，應該積分都比較多"
-      },
-      {
-        "Id": 9,
-        "Name": "丸",
-        "Img": "https://bucket.239847.xyz/image/kimeemaru.webp",
-        "Minimg": "https://bucket.239847.xyz/image/kimeemaru-m.webp",
-        "Des": "2025 愚人節限定徽章"
-      }
+      {"Id": 0, "Name": "諾莉亞的凝視", "Img": "https://bucket.noymanga.com/image/nry-bge.webp", "Minimg": "https://bucket.noymanga.com/image/nry-bgem.webp", "Des": "有這個徽章的人，應該積分都比較多"},
+      {"Id": 0, "Name": "丸", "Img": "https://bucket.noymanga.com/image/kimeemaru.webp", "Minimg": "https://bucket.noymanga.com/image/kimeemaru-m.webp", "Des": "2025 愚人節限定徽章"},
+      {"Id": 0, "Name": "100 天簽到紀念", "Img": "https://bucket.noymanga.com/image/100-badge-full.webp", "Minimg": "https://bucket.noymanga.com/image/100-badge.webp", "Des": "連續 100 天簽到紀念"},
+      {"Id": 0, "Name": "5st 紀念徽章", "Img": "https://bucket.noymanga.com/image/5th-m.webp", "Minimg": "https://bucket.noymanga.com/image/5th-s.webp", "Des": "不知道應該講甚麼好，那就五週年快樂吧！"},
+      {"Id": 0, "Name": "5st 紀念徽章 H", "Img": "https://bucket.noymanga.com/image/5th-h2.webp", "Minimg": "https://bucket.noymanga.com/image/5th-h1.webp", "Des": "不知道應該講甚麼好，那就五週年快樂吧！By 布魯修卡"}
     ],
     "Su": 0
   }

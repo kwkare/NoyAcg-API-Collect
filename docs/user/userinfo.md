@@ -7,7 +7,7 @@
 | Endpoint | `POST https://noymanga.com/api/v3/userinfo` |
 | Content-Type | `application/x-www-form-urlencoded`（无请求体，`Content-Length: 0`） |
 | 鉴权 | Cookie `NOY_SESSION` |
-| 校验 | 🟡 未登录分支 2026-10-26 实测；字段沿用 2026-03 抓包 |
+| 校验 | ✅ 2026-10-26 带登录态实测 |
 
 这个接口也是**最轻的会话探活方式**：无副作用、返回小，适合当心跳。
 
@@ -18,8 +18,8 @@
   "status": "ok",
   "userinfo": {
     "Email": "your@example.com",
-    "Integral": 41,
-    "Time": 1673114514,
+    "Integral": 1090.7,
+    "Time": 1655471118,
     "Uhash": "1343a10d7",
     "Uid": 12345,
     "Username": "your-name",
@@ -28,10 +28,10 @@
     "CommentLen": 0,
     "Badge": [
       {
-        "Id": 8,
+        "Id": 0,
         "Name": "諾莉亞的凝視",
-        "Img": "https://bucket.239847.xyz/image/nry-bge.webp",
-        "Minimg": "https://bucket.239847.xyz/image/nry-bgem.webp",
+        "Img": "https://bucket.noymanga.com/image/nry-bge.webp",
+        "Minimg": "https://bucket.noymanga.com/image/nry-bgem.webp",
         "Des": "有這個徽章的人，應該積分都比較多"
       }
     ],
@@ -40,33 +40,54 @@
 }
 ```
 
-> 完整脱敏样例：[`fixtures/userinfo.json`](../../fixtures/userinfo.json)。
-> 原文档示例里 `Badge[].Id` 写成 `0`，同一枚徽章在 [`/api/badge`](./badge.md) 里是 `8`——**以 `/api/badge` 为准**，`userinfo` 里的 `Id` 待复测 ⚠️。
+完整脱敏样例（5 枚徽章）：[`fixtures/userinfo.json`](../../fixtures/userinfo.json)。
 
 ## 字段说明
 
 | 路径 | 类型 | 说明 |
 | --- | --- | --- |
 | `status` | string | `ok` / `login` |
-| `userinfo.Email` | string | 注册邮箱（明文返回，注意别截图泄漏） |
-| `userinfo.Integral` | int | 当前积分余额 |
-| `userinfo.Time` | int | 注册/首次登录时间（unix 秒），语义待确认 ⚠️ |
-| `userinfo.Uhash` | string | 用户短哈希，出现在图片路径里当话题目录 |
+| `userinfo.Email` | string | 注册邮箱（明文返回，截图前打码） |
+| `userinfo.Integral` | **number** | 积分余额，**可能是小数**（实测 `1090.7`），别按 int 建模 |
+| `userinfo.Time` | int | 账号创建时间（unix 秒），实测 `1655471118` = 2022-06-17 |
+| `userinfo.Uhash` | string | 用户短哈希，出现在头像路径与图床文件名里 |
 | `userinfo.Uid` | int | 用户 ID |
 | `userinfo.Username` | string | 昵称 |
 | `userinfo.Avatar` | string | 头像**相对路径**（`avatar/xxx.webp`），需自行拼图床域名 |
 | `userinfo.Bg` | string | 背景图**相对路径**（`bg/xxx.webp`） |
-| `userinfo.CommentLen` | int | 评论数，样例为 `0` ⚠️ |
-| `userinfo.Badge` | `Badge[]` | 当前**佩戴中**的徽章（与 `/api/badge` 的 `show` 对应） |
-| `userinfo.Su` | int | 语义未知 ⚠️（样例恒为 `0`） |
+| `userinfo.CommentLen` | int | 评论数（实测 `0`） |
+| `userinfo.Badge` | `Badge[]` | 当前**佩戴中**的徽章，与 `/api/badge` 的 `show` 一一对应 |
+| `userinfo.Su` | int | 语义未知，实测恒为 `0` ⚠️ |
 
-`Avatar` / `Bg` 的正确拼法（样例里徽章用的图床域名）：
+### ⚠️ `Badge[].Id` 恒为 `0`
+
+这是本次实测最重要的发现：`userinfo.Badge` 里的每一项 `Id` **都是 `0`**，即使同一枚徽章在 [`/api/badge`](./badge.md) 里明明是 `8`。
+
+实测对照（同一次请求）：
+
+| 徽章 | `userinfo.Badge[].Id` | `/api/badge` 的 `Id` |
+| --- | --- | --- |
+| 諾莉亞的凝視 | `0` | `8` |
+| 丸 | `0` | `9` |
+| 100 天簽到紀念 | `0` | `10` |
+| 5st 紀念徽章 | `0` | `11` |
+| 5st 紀念徽章 H | `0` | `12` |
+
+所以这不是老文档写错，而是**服务端确实不填这个字段**。要拿真实 ID：
+
+- 用 `/api/badge` 的 `data[].Id`；
+- 或者用 `Name` / `Img` 在 `data` 里做匹配（`Img` URL 是稳定的）。
+
+## 头像 / 背景图地址
+
+接口只给相对路径，实测拼法：
 
 ```text
-https://bucket.239847.xyz/image/<Avatar>
+https://bucket.noymanga.com/image/<Avatar>
+https://bucket.noymanga.com/image/<Bg>
 ```
 
-但**不要硬编码**这个域名——它是图床，历史上换过（`bucket.noymanga.com` 也在用）。稳妥做法是先用徽章的 `Img` 反推基地址。
+徽章图同样托管在这个图床（老文档写的 `bucket.239847.xyz` 已换成 `bucket.noymanga.com`）。**不要硬编码**域名，历史上一换就全挂，可以从任意一个徽章的 `Img` 反推基地址。
 
 ## 失败分支
 
@@ -81,19 +102,17 @@ https://bucket.239847.xyz/image/<Avatar>
 ```bash
 BASE=https://noymanga.com
 
-# 探活 + 看积分
-curl -s -X POST "$BASE/api/v3/userinfo" \
-  -b "NOY_SESSION=xxxx" \
-  -H "allow-adult: false" |
+# 探活 + 看积分（注意可能是小数）
+curl -s -X POST "$BASE/api/v3/userinfo" -b "NOY_SESSION=xxxx" |
   python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('status'), d.get('userinfo',{}).get('Integral'))"
 
-# 打印佩戴中的徽章
+# 佩戴中的徽章（Id 全是 0，要真实 ID 请再查 /api/badge）
 curl -s -X POST "$BASE/api/v3/userinfo" -b "NOY_SESSION=xxxx" |
   python3 -c "import json,sys; d=json.load(sys.stdin); [print(b['Id'], b['Name']) for b in d.get('userinfo',{}).get('Badge',[])]"
 ```
 
 ## 备注
 
-- 邮箱是明文返回的，抓包分享前必须打码。
-- 接口路径是 `v3`，但登录、首页仍是 `v1`（无版本号）——站点在做版本迁移，调用时按路径分别对待。
-- 无缓存头，`CF-Cache-Status: DYNAMIC`，可以放心轮询（但别太频）。
+- 邮箱明文返回，抓包分享前必须打码。
+- 路径是 `v3`，而登录、首页仍是 `v1`（无版本号），签到已经到 `v4` —— 三套版本号并存，别指望统一。
+- 无缓存头（`CF-Cache-Status: DYNAMIC`），可以轮询，但别太频。

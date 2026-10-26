@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"img": "https://bucket.noymanga.com/image/<ad-1>.webp", "url": "https://example.com/ad-1"},
+    {"img": "https://bucket.noymanga.com/image/<ad-2>.webp", "url": "https://example.com/ad-2"},
+    {"img": "https://bucket.noymanga.com/image/<ad-3>.webp", "url": "https://example.com/ad-3"}
+  ],
+  "status": "ok"
+}

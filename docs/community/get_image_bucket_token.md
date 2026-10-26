@@ -7,7 +7,7 @@
 | Endpoint | `POST https://noymanga.com/api/get_image_bucket_token` |
 | Content-Type | `application/x-www-form-urlencoded`（空表单） |
 | 鉴权 | Cookie `NOY_SESSION` |
-| 校验 | 🟡 未登录分支 2026-10-26 实测；成功分支沿用 2026-03 记录 |
+| 校验 | ✅ 2026-10-26 带登录态实测 |
 
 ## 请求头
 
@@ -33,11 +33,17 @@
 | `status` | string | `ok` / `login` |
 | `token` | string | 上传凭证，形如 URL-safe base64 |
 
+## 实测的 token 形态
+
+- 长度 **136 个字符**，URL-safe base64（`A-Za-z0-9_-`），以 `==` 结尾；
+- **每次调用都不同**（连调两次得到两个不同 token），所以按「一次性凭证」处理最安全；
+- 短时效：拿到就用，别缓存（具体 TTL 未测 ⚠️）。
+
 ## 关键特性
 
-- **短时效**：换到就立刻用，别缓存到下一个小时（具体 TTL 未测 ⚠️）。
-- **一次性倾向**：重复使用同一 token 上传多张图是否可行未验证；批量上传建议每张换一次。
 - **与 Cookie 解耦**：图床只认 token，不认 `NOY_SESSION`，所以上传请求不需要带 Cookie（也不该带）。
+- **前端走的是代理路径**：网页端实际请求 `https://noymanga.com/bucket/api/upload_image`（主域代理到图床），
+  直连 `https://bucket.noymanga.com/api/upload_image` 也能通，但会被 CORS 挡在浏览器里。
 
 ## 失败分支
 

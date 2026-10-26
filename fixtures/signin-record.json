@@ -1,0 +1,8 @@
+{
+  "continuous": 140,
+  "data": [
+    {"id": 0, "uid": 0, "continuous": 140, "ip": "0.0.0.0", "time": "2026-10-26T00:00:00+08:00", "weekday": 1}
+  ],
+  "status": 200,
+  "today": true
+}

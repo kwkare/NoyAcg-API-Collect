@@ -1,20 +1,11 @@
 {
   "data": [
-    {
-      "Id": 8,
-      "Name": "諾莉亞的凝視",
-      "Img": "https://bucket.239847.xyz/image/nry-bge.webp",
-      "Minimg": "https://bucket.239847.xyz/image/nry-bgem.webp",
-      "Des": "有這個徽章的人，應該積分都比較多"
-    },
-    {
-      "Id": 9,
-      "Name": "丸",
-      "Img": "https://bucket.239847.xyz/image/kimeemaru.webp",
-      "Minimg": "https://bucket.239847.xyz/image/kimeemaru-m.webp",
-      "Des": "2025 愚人節限定徽章"
-    }
+    {"Id": 8, "Name": "諾莉亞的凝視", "Img": "https://bucket.noymanga.com/image/nry-bge.webp", "Minimg": "https://bucket.noymanga.com/image/nry-bgem.webp", "Des": "有這個徽章的人，應該積分都比較多"},
+    {"Id": 9, "Name": "丸", "Img": "https://bucket.noymanga.com/image/kimeemaru.webp", "Minimg": "https://bucket.noymanga.com/image/kimeemaru-m.webp", "Des": "2025 愚人節限定徽章"},
+    {"Id": 10, "Name": "100 天簽到紀念", "Img": "https://bucket.noymanga.com/image/100-badge-full.webp", "Minimg": "https://bucket.noymanga.com/image/100-badge.webp", "Des": "連續 100 天簽到紀念"},
+    {"Id": 11, "Name": "5st 紀念徽章", "Img": "https://bucket.noymanga.com/image/5th-m.webp", "Minimg": "https://bucket.noymanga.com/image/5th-s.webp", "Des": "不知道應該講甚麼好，那就五週年快樂吧！"},
+    {"Id": 12, "Name": "5st 紀念徽章 H", "Img": "https://bucket.noymanga.com/image/5th-h2.webp", "Minimg": "https://bucket.noymanga.com/image/5th-h1.webp", "Des": "不知道應該講甚麼好，那就五週年快樂吧！By 布魯修卡"}
   ],
-  "show": ["9", "8"],
+  "show": ["10", "11", "9", "8"],
   "status": "ok"
 }

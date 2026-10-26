@@ -9,7 +9,15 @@
 | 鉴权 | 表单里的 `token`（来自 [get_image_bucket_token](./get_image_bucket_token.md)），**不用 Cookie** |
 | 校验 | 🟡 空 token 返回 `403`（2026-10-26 实测） |
 
-图床是独立域名，跨域限制严格（前端自己都过不去），所以这个接口基本只能服务端 / 本地脚本调用。
+图床是独立域名，跨域限制严格，所以这个接口基本只能服务端 / 本地脚本调用。网页端自己走的是主域代理路径
+`https://noymanga.com/bucket/api/upload_image`（同一套参数），脚本用哪个都行。
+
+同家族还有两个未文档化的兄弟接口（从 JS bundle 里读到，**未验证** 🚧）：
+
+| 路径 | 用途猜测 |
+| --- | --- |
+| `/bucket/api/upload_avatar` | 上传头像 |
+| `/bucket/api/upload_bg` | 上传主页背景图 |
 
 ## 请求头
 

@@ -11,8 +11,9 @@
 | 旧域名 | `beta.noyteam.online` 已 **302** 跳转至新域名（2026-10-26 实测），旧文档里的示例地址全部失效 |
 | 鉴权 | Cookie `NOY_SESSION`，见 [NOY_SESSION](./docs/auth/noy_session.md) |
 | 请求风格 | 全部 `POST`，表单 `application/x-www-form-urlencoded`；图床上传为 `multipart/form-data` |
-| 响应风格 | JSON，业务状态放在 `status` 字段：`ok` / `error` / `login` |
-| 内容分级 | 请求头 `allow-adult: true`、`false`、`both` |
+| 响应风格 | JSON，业务状态放在 `status` 字段：`ok` / `error` / `login`（签到接口是数字 `200`） |
+| 内容分级 | 请求头 `allow-adult: true`、`false`、`both`，**`/api/home` 不传时默认返回 R18** |
+| 版本号 | `v1`（无版本号）/ `v3` / `v4` 三套并存，按路径各自对待 |
 
 > [!WARNING]
 > **免责声明**：本项目仅供技术研究与学习参考。请勿利用本项目提供的接口进行任何形式的攻击、爬虫滥用或违反社区服务条款的操作。因使用本项目导致的任何后果，作者不承担任何法律责任。
@@ -21,19 +22,21 @@
 
 ## 接口一览
 
-「校验」列表示最近一次人工验证的状态：✅ 已实测可用 · 🟡 部分实测（只验证了鉴权/错误分支）· ⚠️ 沿用旧记录待复测。
+「校验」列表示最近一次人工验证的状态：✅ 已实测 · 🟡 部分实测（只验证了鉴权/错误分支）· ⚠️ 沿用旧记录待复测。
 
 | 接口 | 端点 | 鉴权 | 校验 | 文档 |
 | --- | --- | --- | --- | --- |
-| 登录 | `POST /api/login` | — | 🟡 无效凭据返回 `status: error`（2026-10-26） | [login.md](./docs/auth/login.md) |
-| 会话凭证 | Cookie `NOY_SESSION` | — | 🟡 未登录返回 `status: login`（2026-10-26） | [noy_session.md](./docs/auth/noy_session.md) |
-| 首页聚合 | `POST /api/home` | Cookie | 🟡 数据字段沿用 2026-03 抓包 | [home.md](./docs/home.md) |
-| 用户信息 | `POST /api/v3/userinfo` | Cookie | 🟡 未登录分支实测 | [userinfo.md](./docs/user/userinfo.md) |
-| 徽章列表 | `POST /api/badge` | Cookie | ⚠️ 待复测 | [badge.md](./docs/user/badge.md) |
-| 徽章佩戴开关 | `POST /api/v3/set_badge_show` | Cookie | ⚠️ 待复测 | [set_badge_show.md](./docs/user/set_badge_show.md) |
-| 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | 🟡 未登录分支实测 | [get_image_bucket_token.md](./docs/community/get_image_bucket_token.md) |
-| 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | 🟡 空 token 返回 403（2026-10-26） | [upload_image.md](./docs/community/upload_image.md) |
-| 发帖 | `POST /api/v3/send_community` | Cookie | ⚠️ 待复测 | [send_community.md](./docs/community/send_community.md) |
+| 登录 | `POST /api/login` | — | ✅ 2026-10-26 | [login](./docs/auth/login.md) |
+| 会话凭证 | Cookie `NOY_SESSION` | — | ✅ 2026-10-26 | [noy_session](./docs/auth/noy_session.md) |
+| 首页聚合 | `POST /api/home` | Cookie | ✅ 2026-10-26 | [home](./docs/home.md) |
+| 首页广告位 | `POST /api/v3/ads` | Cookie | ✅ 2026-10-26 | [ads](./docs/ads.md) |
+| 用户信息 | `POST /api/v3/userinfo` | Cookie | ✅ 2026-10-26 | [userinfo](./docs/user/userinfo.md) |
+| 徽章列表 | `POST /api/badge` | Cookie | ✅ 2026-10-26 | [badge](./docs/user/badge.md) |
+| 徽章佩戴开关 | `POST /api/v3/set_badge_show` | Cookie | ⚠️ 待复测（写法为 toggle，写前先读） | [set_badge_show](./docs/user/set_badge_show.md) |
+| 签到记录 | `POST /api/v4/signin/record` | Cookie | ✅ 2026-10-26 | [signin](./docs/task/signin.md) |
+| 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | ✅ 2026-10-26 | [get_image_bucket_token](./docs/community/get_image_bucket_token.md) |
+| 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | 🟡 空 token 403 已实测 | [upload_image](./docs/community/upload_image.md) |
+| 发帖 | `POST /api/v3/send_community` | Cookie | ⚠️ 待复测（写操作） | [send_community](./docs/community/send_community.md) |
 
 机器可读版本：[`openapi.yaml`](./openapi.yaml)（OpenAPI 3.1，覆盖上面全部端点）。
 
@@ -51,12 +54,27 @@ curl -s -c jar.txt "$BASE/api/login" \
 # 2. 读自己：返回 {"status":"ok","userinfo":{...}}
 curl -s -b jar.txt -X POST "$BASE/api/v3/userinfo" -H "allow-adult: false"
 
-# 3. 读首页：直接看 JSON 顶层结构
+# 3. 读首页：不带头会拿到 R18，务必显式指定分级
 curl -s -b jar.txt -X POST "$BASE/api/home" \
   -H "allow-adult: false" | head -c 400
 ```
 
 脚本示例（Python，含登录、上传图片、发帖）：[`examples/python/noy_client.py`](./examples/python/noy_client.py)。
+
+## 2026-10 实测的主要变化
+
+登录态下把全部端点过了一遍，与原文档的差异（细节见各文档）：
+
+| 变化 | 影响 |
+| --- | --- |
+| `/api/home` **不再返回 `stream`** | 首页「動畫」区块空了；前端仍写 `f.stream ?? []`，所以静默隐藏而非报错 |
+| `allow-adult` **缺省 = R18** | 忘记带请求头就会拿到成人向榜单，测试时容易误判 |
+| `Book` 新增 **`alias`** 字段 | 20 个字段了，解析器按固定下标取值会错位 |
+| `Book.Len` 不是枚举 | 实测 R18 作品取到 `5`~`194`，是「长度/话数」而非「1=短/2=长」 |
+| `userinfo.Integral` 是**小数** | 实测 `1090.7`，按 int 建模会丢精度 |
+| `userinfo.Badge[].Id` **恒为 `0`** | 服务端不填这个字段，要真实 ID 只能查 `/api/badge` |
+| 新增 `/api/v3/ads`、`/api/v4/signin/record` | 广告位与签到记录，此前完全没记录 |
+| 徽章图床从 `bucket.239847.xyz` 换到 `bucket.noymanga.com` | 老文档里的图片 URL 全部失效 |
 
 ## 字段可信度
 
@@ -66,25 +84,27 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 | --- | --- |
 | ✅ | 有近期抓包或实测支撑 |
 | 🟡 | 结构可信，但只验证了部分分支 |
-| ⚠️ | 早期记录，未复测，可能已变更 |
+| ⚠️ | 早期记录或语义不明，未复测 |
 
-已知的、由抓包数据反推出的细节修正（原文档未覆盖）：
+由抓包数据反推出的细节修正（原文档未覆盖）：
 
-- `Book.Len` 出现过 `0`（原文档只写了 `1 / 2`），语义待确认 ⚠️。
-- `Book.publish_year` 可能为空字符串 `""`，不是 `null`，也不是缺字段。
-- `Book.Pname` 大量为占位符 `"未知"`（79 本样例中 72 本），不要当作人物名使用。
-- `Book.RatingBayes` 样例中恒为 `0`，先按「未启用」对待。
-- `userinfo.Badge[].Id` 在原示例里是 `0`，而 `badge.md` 里同一枚徽章是 `8` / `9`；**以 `/api/badge` 返回的 `Id` 为准** ⚠️。
-- 所有接口的 `status` 都有第三个值 `login`（会话失效），原文档只写了 `ok` / `error`。
+- `Book.publish_year` 常见空字符串 `""`，不是 `null`，也不是缺字段；R18 榜单里 80/80 全为空。
+- `Book.RatingSUM` / `RatingCount` 同时为 `0` 表示「还没人评分」，不是评分为 0。
+- `Book.Pname` 大量为占位符 `"未知"`，不要当作人物名使用。
+- `Book.Mode` 与 `Book.Adult` 在其次抓取里一一对应（`Mode=1 ↔ Adult=0`），疑似同人志 / 连载漫画的区分，语义未确认 ⚠️。
+- `Book.RatingBayes` 恒为 `0`，先按「未启用」对待。
+- `allow-adult` 的 `false` / `true` 两套内容池**零交集**，`tags` 也跟着变（9 / 13 / 22 个）。
+- 封面图不在接口里，前端按 `https://img.noymanga.com/<Bid>/m1.webp` 自己拼。
 
 ## 未收录 / 待整理
 
 以下接口尚未整理（欢迎 PR，附 curl 或抓包即可）：
 
-- 每日签到 / 任务系统
+- 执行签到 / 签到奖励规则（只找到 `/api/v4/signin/record` 查询接口）
+- 图床的 `/bucket/api/upload_avatar`、`/bucket/api/upload_bg`（从 JS bundle 读到，未验证）
 - 收藏、订阅、阅读进度
 - 评论、回复、举报
-- 搜索、分类浏览、榜单分页
+- 搜索、分类浏览、榜单分页（`/latest?sort=stream` 等路由存在）
 - 通知 / 消息
 - App（`platform=android`）专用接口
 
@@ -98,8 +118,10 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 ├── openapi.yaml           OpenAPI 3.1 描述（可导入 Postman / 生成客户端）
 ├── docs/                  人读文档，按域划分
 │   ├── home.md
+│   ├── ads.md
 │   ├── auth/              login / NOY_SESSION
 │   ├── user/              userinfo / badge / set_badge_show
+│   ├── task/              signin（记录查询，写接口待补）
 │   └── community/         图床 token / 上传 / 发帖
 ├── fixtures/              原始响应样例（已脱敏，供测试与对比）
 ├── examples/              最小客户端
@@ -109,7 +131,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 
 ## 贡献
 
-见 [CONTRIBUTING.md](./CONTRIBUTING.md)。最低要求：文档一律 **UTF-8 无 BOM**、每改一个端点就更新「校验」列日期。
+见 [CONTRIBUTING.md](./CONTRIBUTING.md)。最低要求：文档一律 **UTF-8 无 BOM**、每改一个端点就更新「校验」列日期、样例必须脱敏（邮箱 / Uid / Uhash / **IP**）。
 
 ## 许可
 

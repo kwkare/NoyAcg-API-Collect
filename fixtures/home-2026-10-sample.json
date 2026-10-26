@@ -1,0 +1,17 @@
+{
+  "bulletin": {"text": "點擊廣告，救救Noy！", "show": true},
+  "favDay": [
+    {"Bid": 54485, "Mode": 1, "Bookname": "腦洞學生會", "alias": "", "Description": "", "Author": "むちまろ（无知麻吕）", "Pname": "未知", "Ptag": "搞笑 校園 戀愛 日常 四格", "Otag": "原創", "Time": 1792832711, "Views": 6364, "Favorites": 1120, "F": false, "Len": 1, "Adult": 0, "Status": 0, "publish_year": "2022", "RatingSUM": 10, "RatingCount": 43, "RatingBayes": 0}
+  ],
+  "readDay": [
+    {"Bid": 64709, "Mode": 1, "Bookname": "在未知的世界作為一條龍堂堂正正地活下去！", "alias": "", "Description": "", "Author": "宫野金太郎", "Pname": "未知", "Ptag": "魔幻 搞笑", "Otag": "原創", "Time": 1792835698, "Views": 421, "Favorites": 47, "F": false, "Len": 2, "Adult": 0, "Status": 0, "publish_year": "2026", "RatingSUM": 10, "RatingCount": 2, "RatingBayes": 0}
+  ],
+  "fs": [
+    {"Bid": 58029, "Mode": 1, "Bookname": "無法在真學姐的面前保持帥氣！", "alias": "", "Description": "", "Author": "藤本れもち", "Pname": "未知", "Ptag": "百合 校園", "Otag": "原創", "Time": 1788189223, "Views": 33, "Favorites": 7, "F": false, "Len": 1, "Adult": 0, "Status": 0, "publish_year": "", "RatingSUM": 0, "RatingCount": 0, "RatingBayes": 0}
+  ],
+  "proportion": [
+    {"Bid": 64418, "Mode": 1, "Bookname": "聆音書心的絲碧卡", "alias": "", "Description": "", "Author": "上野キミコ", "Pname": "未知", "Ptag": "冒險 魔幻", "Otag": "原創", "Time": 1792744539, "Views": 421, "Favorites": 26, "F": false, "Len": 0, "Adult": 0, "Status": 0, "publish_year": "", "RatingSUM": 0, "RatingCount": 0, "RatingBayes": 0}
+  ],
+  "tags": ["冒險", "奇幻", "科幻", "懸疑", "校園", "戀愛", "恐怖", "日常", "治癒"],
+  "status": "ok"
+}
