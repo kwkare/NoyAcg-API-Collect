@@ -2,6 +2,30 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，版本号取「整理批次（年.月.日）」而不是语义化版本。
 
+## 2026.10.27-b — 浏览与讯息实测
+
+把「看」的部分补齐：楼中楼、消息中心三类讯息。
+
+### 新增实测结论
+
+- **楼中楼 `POST /api/v4/community/post/<id>/comment/<rid>/replies` 升 ✅**：`{data:{count, over, page, replies[]}}`，回复按时间**倒序**，`root_id` 恒为根评论、`reply_id` 指向被回复的那一条（两者可以不等）。内容通常已内联在详情接口的 `comments[].replies` 里，这个接口主要用于「加载更多」。
+- **未读计数 `POST /api/v4/msg/count`**：`{count:{all, sys_msg, community_reply, comment_reply}, status}`，导航栏红点就用它。
+- **讯息列表 `POST /api/v3/get_msg`**：`{page, type, v:3}`，`type` 三态对应消息页三个 tab：
+  - `reply`（評論回覆）→ `{reply:{book:{bid:Book}, comment:[…], commentLen, count}}`，书籍单独放 map 里；
+  - `community_reply`（社區回覆）→ `{community_reply:{community:{cid:Post}, community_reply:[…80 条/页], community_reply_len, count}}`；
+  - `sysmsg`（系統訊息）→ `{sysmsg:{count, len, msg:[]}}`（该账号无系统消息，条目字段未知）。
+- 三类消息条目里的头像路径字段是 **`avatarUrl`**，`avatar` 恒为空串；`reply` / `reply_text` 分别是被回复对象 ID 与内容节选。
+- 没找到「标记已读」接口，`*_len` 疑似未读数。
+
+### 新增文档
+
+- `docs/user/messages.md`：讯息中心三个 tab 的完整结构、字典 join 方式、语义存疑点。
+- `docs/community/post_detail.md` 补「楼中楼列表」章节。
+
+### 新增 fixtures
+
+- `comment-replies-sample.json`、`msg-count.json`、`msg-comment-reply-sample.json`、`msg-community-reply-sample.json`（uid / 用户名 / 头像全部打码，正文替换为占位文本）
+
 ## 2026.10.27 — 写操作链路实测（发帖 / 评论 / 签到）
 
 在账号所有者确认后，把「会产生真实内容」的接口也跑了一遍，全部为一次真实操作 + 回读验证。

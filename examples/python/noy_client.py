@@ -15,6 +15,8 @@
     python noy_client.py checkin --yes          # 执行签到
     python noy_client.py list --type new        # 社区最新
     python noy_client.py post 78930             # 帖子详情 + 评论
+    python noy_client.py msg --kind community   # 未读计数 + 社区回覆
+    python noy_client.py replies 41029 445567   # 楼中楼
     python noy_client.py reply 78930 "你好" --yes
     python noy_client.py home --adult false
     python noy_client.py badges
@@ -140,6 +142,19 @@ class NoyClient:
     def post_detail(self, post_id: int) -> dict[str, Any]:
         return self._post(f"/api/v4/community/post/{post_id}").get("data", {})
 
+    def comment_replies(self, post_id: int, rid: int, page: int = 1) -> dict[str, Any]:
+        """楼中楼列表。"""
+        return self._post(
+            f"/api/v4/community/post/{post_id}/comment/{rid}/replies", data={"page": page}
+        ).get("data", {})
+
+    def msg_count(self) -> dict[str, Any]:
+        return self._post("/api/v4/msg/count").get("count", {})
+
+    def messages(self, kind: str = "community", page: int = 1) -> dict[str, Any]:
+        types = {"comment": "reply", "community": "community_reply", "system": "sysmsg"}
+        return self._post("/api/v3/get_msg", data={"page": page, "type": types[kind], "v": 3})
+
     def reply(self, post_id: int, text: str, reply_id: int = -1) -> bool:
         """发评论 / 回复（写操作）。reply_id=-1 为顶层评论。"""
         self._post(
@@ -229,6 +244,15 @@ def main(argv: list[str] | None = None) -> int:
     p_newpost.add_argument("--page", type=int, default=1)
     p_newpost.add_argument("--type", dest="type_", default="new", choices=["new", "latest", "like"])
 
+    p_msg = sub.add_parser("msg", help="讯息：未读计数 + 某一类第一页")
+    p_msg.add_argument("--kind", default="community", choices=["comment", "community", "system"])
+    p_msg.add_argument("--page", type=int, default=1)
+
+    p_replies = sub.add_parser("replies", help="楼中楼列表")
+    p_replies.add_argument("id", type=int, help="帖子 ID")
+    p_replies.add_argument("rid", type=int, help="根评论 ID")
+    p_replies.add_argument("--page", type=int, default=1)
+
     p_reply = sub.add_parser("reply", help="发评论（默认 dry-run）")
     p_reply.add_argument("id", type=int, help="帖子 ID")
     p_reply.add_argument("text")
@@ -302,6 +326,25 @@ def main(argv: list[str] | None = None) -> int:
             print(f"spoiler={post.get('spoiler')!r}  reply={post.get('reply')}")
             for c in (data.get("comments") or [])[:10]:
                 print(f"  - {c['rid']} {c['username']}: {c['content'][:40]}")
+
+        elif args.cmd == "msg":
+            counts = client.msg_count()
+            print(f"未读：全部 {counts.get('all')} / 评论 {counts.get('comment_reply')} / "
+                  f"社区 {counts.get('community_reply')} / 系统 {counts.get('sys_msg')}")
+            data = client.messages(args.kind, args.page)
+            key = {"comment": "reply", "community": "community_reply", "system": "sysmsg"}[args.kind]
+            block = data.get(key) or {}
+            items = block.get(key if key != "reply" else "comment") or block.get("msg") or []
+            print(f"共 {block.get('count')} 条，本页 {len(items)} 条")
+            for item in items[:10]:
+                text = item.get("content") or ""
+                print(f"  - {item.get('username')}: {text[:36]}")
+
+        elif args.cmd == "replies":
+            data = client.comment_replies(args.id, args.rid, args.page)
+            print(f"共 {data.get('count')} 条，末页={data.get('over')}")
+            for c in (data.get("replies") or [])[:10]:
+                print(f"  - {c['rid']} {c['username']} → {c.get('reply_username') or ''}: {c['content'][:36]}")
 
         elif args.cmd == "reply":
             if not args.yes:

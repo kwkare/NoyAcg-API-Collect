@@ -1,0 +1,15 @@
+{
+  "reply": {
+    "book": {
+      "15970": {"Bid": 15970, "Bookname": "<deleted-or-sample>", "Time": 0, "Views": 0, "Favorites": 0, "Mode": 1},
+      "9238": {"Bid": 9238, "Bookname": "<deleted-or-sample>", "Time": 0, "Views": 0, "Favorites": 0, "Mode": 1}
+    },
+    "comment": [
+      {"cid": 91290, "uid": 0, "bid": 15970, "username": "user-a", "avatar": "", "avatarUrl": "avatar/0-<sha>.webp", "area": "China mainland", "reply": 91263, "reply_text": "这条评论的内容节选", "platform": "android", "time": 1757223929, "content": "回复正文"},
+      {"cid": 26587, "uid": 0, "bid": 9238, "username": "user-b", "avatar": "", "avatarUrl": "avatar/0-<sha>.webp", "area": "China mainland", "reply": 26454, "reply_text": "另一条被回复内容的节选", "platform": "android", "time": 1689325264, "content": "另一条回复正文"}
+    ],
+    "commentLen": 0,
+    "count": 2
+  },
+  "status": "ok"
+}

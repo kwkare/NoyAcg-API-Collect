@@ -487,6 +487,104 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleResult'
 
+  /api/v4/community/post/{id}/comment/{rid}/replies:
+    post:
+      tags: [community]
+      summary: 楼中楼列表
+      description: |
+        某条评论下的回复。按时间**倒序**返回；`root_id` 恒为根评论、`reply_id` 指向被回复的那一条。
+        内容通常已内联在帖子详情的 `comments[].replies` 里，本接口主要用于加载更多。
+      operationId: listCommentReplies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: rid
+          in: path
+          required: true
+          description: 根评论 ID
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AllowAdult'
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                page:
+                  type: integer
+                  minimum: 1
+                  default: 1
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 楼中楼页
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentRepliesResult'
+
+  /api/v4/msg/count:
+    post:
+      tags: [user]
+      summary: 未读讯息计数
+      description: 导航栏红点用的计数接口，无请求体。
+      operationId: getMsgCount
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 未读计数
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MsgCountResult'
+
+  /api/v3/get_msg:
+    post:
+      tags: [user]
+      summary: 讯息列表（评论回覆 / 社區回覆 / 系統訊息）
+      description: |
+        响应顶层 key 跟着 `type` 走，是三种不同结构：`reply` / `community_reply` / `sysmsg`。
+        关联对象（书 / 帖子）单独放在 map 里，客户端需要自己 join。
+      operationId: getMessages
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [page, type, v]
+              properties:
+                page:
+                  type: integer
+                  minimum: 1
+                type:
+                  type: string
+                  enum: [reply, community_reply, sysmsg]
+                  description: 評論回覆 / 社區回覆 / 系統訊息
+                v:
+                  type: integer
+                  enum: [3]
+                  description: 前端固定 3，含义未确认
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 三类结构之一（由 type 决定）
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MsgReplyResult'
+                  - $ref: '#/components/schemas/MsgCommunityReplyResult'
+                  - $ref: '#/components/schemas/MsgSysmsgResult'
+
 components:
   securitySchemes:
     session:
@@ -1022,6 +1120,183 @@ components:
               type: boolean
             top_count:
               type: integer
+
+    CommentRepliesResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: object
+          properties:
+            count:
+              type: integer
+              description: 该根评论下的回复总数（等于 comments[].reply_num）
+            page:
+              type: integer
+            over:
+              type: boolean
+            replies:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
+
+    MsgCountResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        count:
+          type: object
+          properties:
+            all:
+              type: integer
+            comment_reply:
+              type: integer
+            community_reply:
+              type: integer
+            sys_msg:
+              type: integer
+
+    CommentReplyItem:
+      type: object
+      description: 书籍评论的回复（type=reply）
+      properties:
+        cid:
+          type: integer
+          description: 该回复在书籍评论里的 ID
+        bid:
+          type: integer
+        uid:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: string
+          description: 恒为空串，头像路径看 avatarUrl
+        avatarUrl:
+          type: string
+        area:
+          type: string
+        reply:
+          type: integer
+          description: 被回复评论的 ID
+        reply_text:
+          type: string
+          description: 被回复内容节选
+        platform:
+          type: string
+        time:
+          type: integer
+          format: int64
+        content:
+          type: string
+
+    CommunityReplyItem:
+      type: object
+      description: 帖子下的回复（type=community_reply）
+      properties:
+        rid:
+          type: integer
+        cid:
+          type: integer
+          description: 所属帖子 ID
+        uid:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: string
+          description: 恒为空串
+        avatarUrl:
+          type: string
+        area:
+          type: string
+        reply:
+          type: integer
+          description: -1 表示顶层回复
+        reply_text:
+          type: string
+        platform:
+          type: string
+        time:
+          type: integer
+          format: int64
+        content:
+          type: string
+
+    MsgReplyResult:
+      type: object
+      required: [status, reply]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        reply:
+          type: object
+          properties:
+            book:
+              type: object
+              description: 书籍字典，key 为 Bid 字符串
+              additionalProperties:
+                type: object
+            comment:
+              type: array
+              items:
+                $ref: '#/components/schemas/CommentReplyItem'
+            commentLen:
+              type: integer
+              description: 疑似未读数
+            count:
+              type: integer
+
+    MsgCommunityReplyResult:
+      type: object
+      required: [status, community_reply]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        community_reply:
+          type: object
+          properties:
+            community:
+              type: object
+              description: 帖子字典，key 为帖子 id 字符串
+              additionalProperties:
+                type: object
+            community_reply:
+              type: array
+              description: 实测每页 80 条
+              items:
+                $ref: '#/components/schemas/CommunityReplyItem'
+            community_reply_len:
+              type: integer
+              description: 疑似未读数
+            count:
+              type: integer
+
+    MsgSysmsgResult:
+      type: object
+      required: [status, sysmsg]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        sysmsg:
+          type: object
+          properties:
+            count:
+              type: integer
+            len:
+              type: integer
+            msg:
+              type: array
+              description: 系统消息条目结构未观察到（实测恒为空）
+              items:
+                type: object
 
     UploadTokenResult:
       type: object

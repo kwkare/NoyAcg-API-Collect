@@ -7,7 +7,7 @@
 | 帖子详情 | `POST /api/v4/community/post/<id>` |
 | 评论列表 | `POST /api/v4/community/post/<id>/comments` |
 | 发评论 / 回复 | `POST /api/v4/community/post/<id>/reply` |
-| 楼中楼列表 | `POST /api/v4/community/post/<id>/comment/<rid>/replies` |
+| 楼中楼列表 | `POST /api/v4/community/post/<id>/comment/<rid>/replies`（✅ 已实测） |
 
 | 项目 | 内容 |
 | --- | --- |
@@ -66,6 +66,37 @@ page=1
 ```
 
 分页判断用 `data.over`；`comments` 里每条自带 `replies`（楼中楼）与 `reply_more`（还有更多回复）。
+
+## 二·五、楼中楼列表
+
+```http
+POST /api/v4/community/post/41029/comment/445567/replies
+page=1
+```
+
+```json
+{
+  "data": {
+    "count": 6,
+    "over": true,
+    "page": 1,
+    "replies": [ { "rid": 456401, "reply_id": 450225, "root_id": 445567, "…": "…" } ]
+  },
+  "status": "ok"
+}
+```
+
+| 字段 | 说明 |
+| --- | --- |
+| `data.count` | 该根评论下的回复总数（与 `comments[].reply_num` 一致） |
+| `data.page` / `data.over` | 分页信息 |
+| `data.replies` | 回复列表，元素结构与评论对象完全相同（见下表） |
+
+实测（根评论 `445567`，6 条回复）：
+
+- 回复**按时间倒序**返回（最新在前）；
+- `root_id` 恒为该根评论的 `rid`，`reply_id` 指向**被回复的那一条**（可能不等于 `root_id`）；
+- 楼中楼通常已经在详情接口的 `comments[].replies` 里内联带出（实测 6/6 全带），这个接口主要用于「加载更多」。
 
 ## 三、发评论 / 回复
 

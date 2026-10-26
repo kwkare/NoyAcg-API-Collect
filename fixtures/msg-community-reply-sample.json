@@ -1,0 +1,15 @@
+{
+  "community_reply": {
+    "community": {
+      "78930": {"id": 78930, "title": "图", "content": "[noygirl:yeah]", "image": ["image/91266-<sha-1>.webp"], "time": 1793030753},
+      "78855": {"id": 78855, "title": "<deleted-or-sample>", "content": "", "image": [], "time": 1793028714}
+    },
+    "community_reply": [
+      {"rid": 460483, "uid": 0, "cid": 78930, "username": "user-a", "avatar": "", "avatarUrl": "avatar/0-<sha>.webp", "area": "Japan", "reply": -1, "reply_text": "", "platform": "", "time": 1793030863, "content": "顶层回复正文"},
+      {"rid": 460338, "uid": 0, "cid": 78855, "username": "user-b", "avatar": "", "avatarUrl": "avatar/0-<sha>.webp", "area": "China mainland", "reply": -1, "reply_text": "", "platform": "", "time": 1793028714, "content": "另一个帖子的顶层回复"}
+    ],
+    "community_reply_len": 0,
+    "count": 1399
+  },
+  "status": "ok"
+}

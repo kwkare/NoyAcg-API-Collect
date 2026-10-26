@@ -41,6 +41,9 @@
 | 帖子列表 | `POST /api/v3/community_list` | Cookie | ✅ 2026-10-27 | [community_list](./docs/community/community_list.md) |
 | 帖子详情 / 评论列表 | `POST /api/v4/community/post/<id>` | Cookie | ✅ 2026-10-27 | [post_detail](./docs/community/post_detail.md) |
 | 发评论 / 回复 | `POST /api/v4/community/post/<id>/reply` | Cookie | ✅ 2026-10-27（真发了一条） | [post_detail](./docs/community/post_detail.md) |
+| 楼中楼列表 | `POST /api/v4/community/post/<id>/comment/<rid>/replies` | Cookie | ✅ 2026-10-27 | [post_detail](./docs/community/post_detail.md) |
+| 未读计数 | `POST /api/v4/msg/count` | Cookie | ✅ 2026-10-27 | [messages](./docs/user/messages.md) |
+| 讯息列表 | `POST /api/v3/get_msg`（`type=reply` / `community_reply` / `sysmsg`） | Cookie | ✅ 2026-10-27 | [messages](./docs/user/messages.md) |
 | 表情包 | 无 API（前端硬编码） | — | ✅ 2026-10-27 | [stickers](./docs/community/stickers.md) |
 
 机器可读版本：[`openapi.yaml`](./openapi.yaml)（OpenAPI 3.1，覆盖上面全部端点）。
@@ -109,10 +112,11 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 以下接口尚未整理（欢迎 PR，附 curl 或抓包即可）：
 
 - `POST /api/v3/edit_community_post`（编辑帖子）、`POST /api/v3/community_like`（点赞）：参数已从 bundle 挖出，**未实测**
-- 楼中楼回复列表 `POST /api/v4/community/post/<id>/comment/<rid>/replies`
 - 图床的 `/bucket/api/upload_avatar`、`/bucket/api/upload_bg`（同家族，未验证）
 - 收藏、订阅、阅读进度、积分流水（bundle 里有 `daily_signin` / `store_purchase` 等动作枚举）
-- 举报、通知 / 消息
+- 举报
+- 訊息的「标记已读」接口（前端只调 `get_msg`，推测打开即已读）
+- `type=sysmsg` 的消息条目字段（该账号没有系统消息，一直是空数组）
 - 搜索、分类浏览、榜单分页（`/latest?sort=stream` 等路由存在）
 - App（`platform=android`）专用接口
 
@@ -128,7 +132,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 │   ├── home.md
 │   ├── ads.md
 │   ├── auth/              login / NOY_SESSION
-│   ├── user/              userinfo / badge / set_badge_show
+│   ├── user/              userinfo / badge / set_badge_show / messages
 │   ├── task/              signin（记录查询 + 执行签到）
 │   └── community/         图床 token / 上传 / 发帖 / 列表 / 详情与评论 / 表情包
 ├── fixtures/              原始响应样例（已脱敏，供测试与对比）
