@@ -12,7 +12,7 @@
 | --- | --- |
 | Content-Type | `application/x-www-form-urlencoded` |
 | 鉴权 | Cookie `NOY_SESSION` |
-| 校验 | ✅ 2026-10-27 实测（只读） |
+| 校验 | ✅ 2026-10-27 实测（列表结构 + 已读机制由账号所有者亲测） |
 
 ## 一、未读计数
 
@@ -143,8 +143,31 @@ page=1&type=community_reply&v=3
 
 - 三类都是「字典 + 列表」结构：把关联对象（书 / 帖子）单独放一个 map，避免重复，客户端要自己 join。
 - 列表**不返回**已读状态字段，已读/未读只体现在 `*_len` 和 `/api/v4/msg/count`。
-- 没找到「标记已读」的接口（前端 bundle 里只有 `get_msg` 和 `msg/count`）⚠️——推测打开列表即视为已读。
+- **已读没有独立接口**：账号所有者实测，点开消息页 / 点击某条消息即自动标记已读，之后 `/api/v4/msg/count` 的对应项归零、`*_len` 也归零。前端 bundle 里确实只有 `get_msg` 和 `msg/count`，没有 mark-as-read 端点。
 - 分页用 `page`，是否支持 `over` 之类的结束标记未验证 ⚠️。
+
+## 实战：怎么知道「我的帖子有没有人回」
+
+`community_reply` 有三个容易踩的点：
+
+1. `community_reply.community_reply[].reply` 为 `-1` 表示**顶层回复**（直接回帖），此时 `reply_text` 是空串；
+2. 顶层回复**不带 `reply_uid`**（只有楼中楼才有），所以不能靠「`reply_uid == 我`」判断「有人回了我」；
+3. 正确做法是**用 `cid` 匹配自己的帖子 id**：先把 `/api/v3/community_list` 里自己的帖子 id 收集起来，再看 `community_reply` 里哪些 `cid` 命中。
+
+```python
+def replies_to_my_posts(session, base, my_uid: int, my_posts: dict[int, str]) -> list[dict]:
+    data = session.post(f"{base}/api/v3/get_msg",
+                        data={"page": 1, "type": "community_reply", "v": 3}).json()
+    block = data["community_reply"]
+    out = []
+    for r in block["community_reply"]:
+        if r["cid"] in my_posts and r["uid"] != my_uid:
+            out.append({"post": my_posts[r["cid"]], "who": r["username"],
+                        "content": r["content"], "time": r["time"]})
+    return out
+```
+
+> 顺带观察：帖子详情接口（`/api/v4/community/post/<id>`）的 `comments` 里**直接就能看到全部顶层回复**，做「检查有没有人回我」用详情接口比翻消息更直接。
 
 ## 示例
 
