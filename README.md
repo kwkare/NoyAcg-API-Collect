@@ -4,6 +4,8 @@
 
 > NoyAcg（[noymanga.com](https://noymanga.com)，漫画・同人志社区）Web / App 客户端 HTTP API 的**非官方**整理笔记。
 > 纯文档项目，没有官方支持，接口随时可能变更。
+>
+> 🔌 想要开箱即用的 agent 集成？见 **[NoyAcg-MCP](https://github.com/kwkare/NoyAcg-MCP)** —— 基于本仓库契约实现的 stdio MCP server（15 个工具 / 6 个资源 / 写操作审计）。
 
 | 项目 | 内容 |
 | --- | --- |
@@ -144,6 +146,12 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 ├── scripts/check_docs.py  本地/CI 自检：编码 / JSON / YAML / 站内链接 / fixture 引用 / 文档索引
 └── .github/workflows/     CI：文档自检 + markdownlint + OpenAPI lint
 ```
+
+## 生态
+
+| 项目 | 说明 |
+| --- | --- |
+| [NoyAcg-MCP](https://github.com/kwkare/NoyAcg-MCP) | TypeScript MCP server，把本文档的接口封成 agent 可直接调用的工具（读帖 / 发帖 / 评论 / 签到 / 徽章），带审计日志与只读模式 |
 
 ## 贡献
 
