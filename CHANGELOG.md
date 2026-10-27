@@ -13,8 +13,9 @@
 
 ### 新增
 
-- `POST /bucket/api/upload_avatar`、`POST /bucket/api/upload_bg`（🟡 路径来自前端 bundle，参数同 `upload_image`）：
-  前端上传后没有额外的保存请求，只重新拉取 `userinfo`，推测服务端在上传时直接写入 `Avatar` / `Bg`（未实测 ⚠️）。
+- `POST /bucket/api/upload_avatar`、`POST /bucket/api/upload_bg`（✅ 背景图实测）：
+  参数同 `upload_image`（`token` + `file`），但**响应只有 `{"status":"ok"}`，没有 `file` 字段** —— 服务端在上传时直接写入 `userinfo.Avatar` / `Bg`，没有额外的「保存资料」请求。
+  实测 1920×1088 PNG → 109 KB webp，`userinfo.Bg` 立即更新；旧文件仍留在图床上（可用同一个接口传回原图回滚）。头像接口未单独实测 ⚠️。
 
 ## 2026-10-27 · 定型审计（bug 修复 + 结构精简）
 

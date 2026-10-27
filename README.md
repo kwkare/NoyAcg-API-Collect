@@ -42,7 +42,7 @@
 | 执行签到 | `POST /api/v4/signin/sign` | Cookie | ✅ 2026-10-27（真签了） | [signin](./docs/task/signin.md) |
 | 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | ✅ 2026-10-26 | [get_image_bucket_token](./docs/community/get_image_bucket_token.md) |
 | 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | ✅ 2026-10-27（6 张真传成功） | [upload_image](./docs/community/upload_image.md) |
-| 头像 / 背景图 | `POST bucket.noymanga.com/api/upload_avatar`、`upload_bg` | token | 🟡 路径已在 bundle 确认，未实测 | [upload_image](./docs/community/upload_image.md) |
+| 头像 / 背景图 | `POST bucket.noymanga.com/api/upload_avatar`、`upload_bg` | token | ✅ 2026-10-27（背景图实测生效） | [upload_image](./docs/community/upload_image.md) |
 | 发帖 | `POST /api/v3/send_community` | Cookie | ✅ 2026-10-27（真发了一帖 6 图） | [send_community](./docs/community/send_community.md) |
 | 帖子列表 | `POST /api/v3/community_list` | Cookie | ✅ 2026-10-27 | [community_list](./docs/community/community_list.md) |
 | 帖子详情 / 评论列表 | `POST /api/v4/community/post/<id>` | Cookie | ✅ 2026-10-27 | [post_detail](./docs/community/post_detail.md) |
