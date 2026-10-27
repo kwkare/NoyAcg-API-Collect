@@ -2,6 +2,20 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，按 **ISO 日期（`YYYY-MM-DD`）** 分条记录，同一天多次整理按新→旧排列。
 
+## 2026-10-27 · 图床 URL 拼接纠错 + 头像/背景图接口
+
+### 修正
+
+- **头像 / 背景图 URL 拼法写错**：旧文档写 `https://bucket.noymanga.com/image/<Avatar>`，实测该地址返回 **JSON 错误体**（HTTP 200）而不是图片。
+  正确形态是「相对路径原样拼到图床域名」：`/avatar/…`、`/bg/…`、`/image/…` 各自独立。
+  已同步修正 [userinfo.md](./docs/user/userinfo.md)，并在 MCP 客户端里修掉同一个 bug。
+- 补充图床的**防盗链**行为：不带 `Referer: https://noymanga.com/` 直接访问返回 **403**。
+
+### 新增
+
+- `POST /bucket/api/upload_avatar`、`POST /bucket/api/upload_bg`（🟡 路径来自前端 bundle，参数同 `upload_image`）：
+  前端上传后没有额外的保存请求，只重新拉取 `userinfo`，推测服务端在上传时直接写入 `Avatar` / `Bg`（未实测 ⚠️）。
+
 ## 2026-10-27 · 定型审计（bug 修复 + 结构精简）
 
 对着「以后不再大改」的标准做了一遍全仓检查。

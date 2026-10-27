@@ -12,12 +12,16 @@
 图床是独立域名，跨域限制严格，所以这个接口基本只能服务端 / 本地脚本调用。网页端自己走的是主域代理路径
 `https://noymanga.com/bucket/api/upload_image`（同一套参数），脚本用哪个都行。
 
-同家族还有两个未文档化的兄弟接口（从 JS bundle 里读到，**未验证** 🚧）：
+同家族还有两个接口，用于设置头像 / 背景图（**路径已在前端 bundle 确认，未实测** 🟡）：
 
-| 路径 | 用途猜测 |
-| --- | --- |
-| `/bucket/api/upload_avatar` | 上传头像 |
-| `/bucket/api/upload_bg` | 上传主页背景图 |
+| 路径 | 用途 | 参数 |
+| --- | --- | --- |
+| `POST /bucket/api/upload_avatar` | 设置头像 | `token` + `file`，与 `upload_image` 完全相同 |
+| `POST /bucket/api/upload_bg` | 设置主页背景图 | 同上 |
+
+- 前端把三者封装成同一个通用上传函数（先换 token，再 multipart），只是路径不同；
+- 上传成功后前端**没有额外的「保存资料」请求**，只重新拉了一次 `userinfo` —— 推测服务端在上传时就写入了 `userinfo.Avatar` / `userinfo.Bg`（未实测 ⚠️）；
+- 错误码比发帖图片多两种：`size`（超过大小限制）、`ext`（不支持的格式），外加通用的 `token_error` / `token_format_error`。
 
 ## 请求头
 

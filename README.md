@@ -5,7 +5,7 @@
 > NoyAcg（[noymanga.com](https://noymanga.com)，漫画・同人志社区）Web / App 客户端 HTTP API 的**非官方**整理笔记。
 > 纯文档项目，没有官方支持，接口随时可能变更。
 >
-> 🔌 想要开箱即用的 agent 集成？见 **[NoyAcg-MCP](https://github.com/kwkare/NoyAcg-MCP)** —— 基于本仓库契约实现的 stdio MCP server（15 个工具 / 6 个资源 / 写操作审计）。
+> 🔌 想要开箱即用的 agent 集成？见 **[NoyAcg-MCP](https://github.com/kwkare/NoyAcg-MCP)** —— 基于本仓库契约实现的 stdio MCP server（18 个工具 / 6 个资源 / 写操作审计）。
 
 | 项目 | 内容 |
 | --- | --- |
@@ -42,6 +42,7 @@
 | 执行签到 | `POST /api/v4/signin/sign` | Cookie | ✅ 2026-10-27（真签了） | [signin](./docs/task/signin.md) |
 | 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | ✅ 2026-10-26 | [get_image_bucket_token](./docs/community/get_image_bucket_token.md) |
 | 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | ✅ 2026-10-27（6 张真传成功） | [upload_image](./docs/community/upload_image.md) |
+| 头像 / 背景图 | `POST bucket.noymanga.com/api/upload_avatar`、`upload_bg` | token | 🟡 路径已在 bundle 确认，未实测 | [upload_image](./docs/community/upload_image.md) |
 | 发帖 | `POST /api/v3/send_community` | Cookie | ✅ 2026-10-27（真发了一帖 6 图） | [send_community](./docs/community/send_community.md) |
 | 帖子列表 | `POST /api/v3/community_list` | Cookie | ✅ 2026-10-27 | [community_list](./docs/community/community_list.md) |
 | 帖子详情 / 评论列表 | `POST /api/v4/community/post/<id>` | Cookie | ✅ 2026-10-27 | [post_detail](./docs/community/post_detail.md) |
@@ -119,7 +120,6 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 
 以下接口尚未整理（欢迎 PR，附 curl 或抓包即可）：
 
-- 图床的 `/bucket/api/upload_avatar`、`/bucket/api/upload_bg`（同家族，未验证）
 - 收藏、订阅、阅读进度、积分流水（bundle 里有 `daily_signin` / `store_purchase` 等动作枚举）
 - 举报
 - `type=sysmsg` 的消息条目字段（该账号没有系统消息，一直是空数组）

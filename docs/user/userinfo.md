@@ -85,9 +85,14 @@
 接口只给相对路径，实测拼法：
 
 ```text
-https://bucket.noymanga.com/image/<Avatar>
-https://bucket.noymanga.com/image/<Bg>
+https://bucket.noymanga.com/<Avatar>     # 例如 avatar/38354-….webp
+https://bucket.noymanga.com/<Bg>         # 例如 bg/38354-….webp
 ```
+
+> ⚠️ **不要统一加 `/image/` 前缀**（旧版文档在这里写错过）：`image/…` 是帖子图片的目录，头像和背景图各自是 `avatar/…`、`bg/…`。
+> 实测 `https://bucket.noymanga.com/image/avatar/xxx.webp` 返回的是 **JSON 错误体**（HTTP 仍是 `200`），不是图片。
+>
+> 图床有防盗链：直接 `curl` 要带 `Referer: https://noymanga.com/`，否则 **403**。
 
 徽章图同样托管在这个图床（老文档写的 `bucket.239847.xyz` 已换成 `bucket.noymanga.com`）。**不要硬编码**域名，历史上一换就全挂，可以从任意一个徽章的 `Img` 反推基地址。
 
