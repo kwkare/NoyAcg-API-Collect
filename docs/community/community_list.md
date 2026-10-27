@@ -60,7 +60,7 @@
 | `content` | string | 正文（表情包是 `[noygirl:yeah]` 这种代码文本，见 [stickers.md](./stickers.md)） |
 | `image` | string[] | 图片路径数组，元素形如 `image/<file>.webp`；无图时为空数组 |
 | `time` | int | 发帖时间（unix 秒） |
-| `expired` | int | **过期时间**，实测 = `time + 7776000`（正好 **90 天**） |
+| `expired` | int | **过期时间**，实测 = `time + 7776000`（正好 **90 天**）。到期后帖子**不会被删除**，但会从过滤 / 搜索结果里隐藏（站内用户实测，2026-10-27） |
 | `area` | string | 发帖地区，由服务端根据 IP 判定（如 `Japan`），非用户自填 |
 | `platform` | string | 客户端来源，`web` / `android` |
 | `like` | int | 点赞数 |
@@ -94,4 +94,4 @@ for p in d['info'][:5]:
 
 - 列表里拿不到评论内容，要看评论得请求详情（[post_detail.md](./post_detail.md)）。
 - 想找自己刚发的帖子：用 `type=new` 翻第一页基本就能看到。
-- 帖子 90 天后过期（`expired`），过期后的表现未实测 ⚠️。
+- 帖子 90 天后过期（`expired`）。过期不等于删除：链接仍可访问，只是不再出现在列表 / 搜索结果里。
