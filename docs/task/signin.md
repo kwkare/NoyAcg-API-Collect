@@ -115,7 +115,7 @@ POST /api/v4/signin/sign
 | --- | --- | --- |
 | 签到成功 | `200` | `{"continuous":N,"msg":"success","status":200}` |
 | 今天已签过 | `200` | `{"msg":"Please do not sign in too frequently","status":500}` |
-| 未登录 | 未实测 ⚠️ | 推测 `{"status":"login"}`（或数字） |
+| 未登录 | `200` | `{"status":"login"}` ✅ 2026-10-27 实测（`sign` 与 `record` 都是字符串 `login`，不是数字） |
 
 ## 示例
 

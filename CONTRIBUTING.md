@@ -5,8 +5,10 @@
 ## 提交前自检
 
 ```bash
-python3 scripts/check_docs.py     # 编码 / BOM / JSON / 站内链接 / 旧域名
+python3 -m pip install pyyaml     # 让自检能顺带校验 YAML
+python3 scripts/check_docs.py     # 编码 / BOM / 换行 / JSON / YAML / 站内链接 / 旧域名 / fixture 引用 / 文档索引
 npx --yes @redocly/cli lint openapi.yaml   # 改过 openapi.yaml 时
+npx --yes markdownlint-cli2       # 改过 markdown 时
 ```
 
 CI 会跑同样的检查，另外还有 markdownlint。

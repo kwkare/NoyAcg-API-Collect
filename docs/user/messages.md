@@ -103,8 +103,8 @@ page=1&type=community_reply&v=3
     "community": { "78930": { "id": 78930, "title": "图", "…": "…" } },
     "community_reply": [
       {
-        "rid": 460483, "uid": 38354, "cid": 78930,
-        "username": "…", "avatar": "", "avatarUrl": "avatar/38354-<sha>.webp",
+        "rid": 460483, "uid": 12345, "cid": 78930,
+        "username": "…", "avatar": "", "avatarUrl": "avatar/12345-<sha>.webp",
         "area": "Japan", "reply": -1, "reply_text": "",
         "platform": "", "time": 1793030863, "content": "…"
       }

@@ -26,7 +26,10 @@
 
 | 接口 | 端点 | 鉴权 | 校验 | 文档 |
 | --- | --- | --- | --- | --- |
-| 登录 | `POST /api/login` | — | ✅ 2026-10-26 | [login](./docs/auth/login.md) |
+| 登录 | `POST /api/login` | — | ✅ 2026-10-27（真实登录抓包核对） | [login](./docs/auth/login.md) |
+| 注册 | `POST /api/v3/reg` | — | 🚧 参数已挖到，需极验验证码，未实测 | [login](./docs/auth/login.md) |
+| 重置密码 | `POST /api/reset_passwd` | — | 🚧 参数已挖到，未实测 | [login](./docs/auth/login.md) |
+| 登出 | `POST /api/logout` | Cookie | ✅ 2026-10-27（会吊销会话） | [session](./docs/auth/session.md) |
 | 会话凭证 | Cookie `NOY_SESSION` | — | ✅ 2026-10-27（含 cookie 解剖 / 属性 / 吊销） | [session](./docs/auth/session.md) |
 | 首页聚合 | `POST /api/home` | Cookie | ✅ 2026-10-26 | [home](./docs/home.md) |
 | 首页广告位 | `POST /api/v3/ads` | Cookie | ✅ 2026-10-26 | [ads](./docs/ads.md) |
@@ -36,7 +39,7 @@
 | 签到记录 | `POST /api/v4/signin/record` | Cookie | ✅ 2026-10-27（跨零点实测） | [signin](./docs/task/signin.md) |
 | 执行签到 | `POST /api/v4/signin/sign` | Cookie | ✅ 2026-10-27（真签了） | [signin](./docs/task/signin.md) |
 | 图床上传凭证 | `POST /api/get_image_bucket_token` | Cookie | ✅ 2026-10-26 | [get_image_bucket_token](./docs/community/get_image_bucket_token.md) |
-| 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | 🟡 空 token 403 已实测 | [upload_image](./docs/community/upload_image.md) |
+| 图片上传 | `POST bucket.noymanga.com/api/upload_image` | token | ✅ 2026-10-27（6 张真传成功） | [upload_image](./docs/community/upload_image.md) |
 | 发帖 | `POST /api/v3/send_community` | Cookie | ✅ 2026-10-27（真发了一帖 6 图） | [send_community](./docs/community/send_community.md) |
 | 帖子列表 | `POST /api/v3/community_list` | Cookie | ✅ 2026-10-27 | [community_list](./docs/community/community_list.md) |
 | 帖子详情 / 评论列表 | `POST /api/v4/community/post/<id>` | Cookie | ✅ 2026-10-27 | [post_detail](./docs/community/post_detail.md) |
@@ -105,7 +108,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 - `Book.publish_year` 常见空字符串 `""`，不是 `null`，也不是缺字段；R18 榜单里 80/80 全为空。
 - `Book.RatingSUM` / `RatingCount` 同时为 `0` 表示「还没人评分」，不是评分为 0。
 - `Book.Pname` 大量为占位符 `"未知"`，不要当作人物名使用。
-- `Book.Mode` 与 `Book.Adult` 在其次抓取里一一对应（`Mode=1 ↔ Adult=0`），疑似同人志 / 连载漫画的区分，语义未确认 ⚠️。
+- `Book.Mode` 与 `Book.Adult` 在本次抓取里一一对应（`Mode=1 ↔ Adult=0`），疑似同人志 / 连载漫画的区分，语义未确认 ⚠️。
 - `Book.RatingBayes` 恒为 `0`，先按「未启用」对待。
 - `allow-adult` 的 `false` / `true` 两套内容池**零交集**，`tags` 也跟着变（9 / 13 / 22 个）。
 - 封面图不在接口里，前端按 `https://img.noymanga.com/<Bid>/m1.webp` 自己拼。
@@ -117,7 +120,6 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 - 图床的 `/bucket/api/upload_avatar`、`/bucket/api/upload_bg`（同家族，未验证）
 - 收藏、订阅、阅读进度、积分流水（bundle 里有 `daily_signin` / `store_purchase` 等动作枚举）
 - 举报
-- 訊息的「标记已读」接口（前端只调 `get_msg`，推测打开即已读）
 - `type=sysmsg` 的消息条目字段（该账号没有系统消息，一直是空数组）
 - 搜索、分类浏览、榜单分页（`/latest?sort=stream` 等路由存在）
 - App（`platform=android`）专用接口
@@ -139,13 +141,15 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 │   └── community/         图床 token / 上传 / 发帖 / 列表 / 详情与评论 / 表情包
 ├── fixtures/              原始响应样例（已脱敏，供测试与对比）
 ├── examples/              最小客户端
-├── scripts/check_docs.py  本地/CI 自检：编码、JSON 有效性、站内链接、旧域名残留
+├── scripts/check_docs.py  本地/CI 自检：编码 / JSON / YAML / 站内链接 / fixture 引用 / 文档索引
 └── .github/workflows/     CI：文档自检 + markdownlint + OpenAPI lint
 ```
 
 ## 贡献
 
 见 [CONTRIBUTING.md](./CONTRIBUTING.md)。最低要求：文档一律 **UTF-8 无 BOM**、每改一个端点就更新「校验」列日期、样例必须脱敏（邮箱 / Uid / Uhash / **IP**）。
+
+提交前跑一遍 `python3 scripts/check_docs.py`（CI 会跑同一套，外加 markdownlint 与 OpenAPI lint）。
 
 ## 许可
 

@@ -12,18 +12,32 @@ export NOY_SESSION=xxxx
 # 或者
 export NOY_EMAIL=you@example.com NOY_PASS=YOUR_PASSWORD
 
+# 只读
 python noy_client.py whoami
-python noy_client.py home --adult false --out home.json
+python noy_client.py home --adult false --out home.json       # 默认带 v=3，含 stream
 python noy_client.py badges
-python noy_client.py upload ./test.jpg
+python noy_client.py signin                                   # 签到记录
+python noy_client.py list --type new                          # 社区列表
+python noy_client.py post 78930                               # 帖子详情 + 评论
+python noy_client.py msg --kind community                     # 讯息
+python noy_client.py replies 41029 445567                     # 楼中楼
+
+# 写操作（默认 dry-run，加 --yes 才真的执行）
+python noy_client.py checkin --yes
+python noy_client.py upload ./test.jpg                        # 上传本身即写操作
 python noy_client.py send --title 测试 --content 你好 --yes
+python noy_client.py reply 78930 "你好" --yes
+python noy_client.py edit 78930 --title 图 --content "[noygirl:yeah]" --yes
+python noy_client.py like 78930 --yes
+python noy_client.py logout --yes                             # ⚠️ 会吊销当前会话
 ```
 
 设计上的几个刻意选择：
 
 | 选择 | 原因 |
 | --- | --- |
-| 写操作默认 dry-run | `send`、`toggle-badge` 不加 `--yes` 只打印将要做什么 |
+| 写操作默认 dry-run | `send` / `reply` / `edit` / `like` / `logout` 不加 `--yes` 只打印将要做什么 |
+| 干跑不需要凭证 | dry-run 分支不构造客户端，没有 `NOY_SESSION` 也能先看计划 |
 | 上传用独立的 `requests.post` | 不共享 `Session`，避免把 `NOY_SESSION` 发给 `bucket.noymanga.com` |
 | 只判断响应体的 `status` | 这套 API 的 HTTP 码几乎恒为 200，看状态码会误判 |
 | `AuthRequired` 单独一类异常 | `status: login` 需要重新登录，和业务失败不是一回事 |

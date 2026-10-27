@@ -15,7 +15,7 @@
 | 鉴权 | Cookie `NOY_SESSION` |
 | 校验 | ✅ 2026-10-27 实测（含真发一条评论） |
 
-## 一、帖子详情
+## 帖子详情
 
 ```http
 POST /api/v4/community/post/78930
@@ -46,7 +46,7 @@ POST /api/v4/community/post/78930
 
 注意详情里的 `data.uid` 是**当前登录用户**，不是帖子作者（作者在 `data.post.uid`）。
 
-## 二、评论列表（分页）
+## 评论列表（分页）
 
 ```http
 POST /api/v4/community/post/78930/comments
@@ -67,7 +67,7 @@ page=1
 
 分页判断用 `data.over`；`comments` 里每条自带 `replies`（楼中楼）与 `reply_more`（还有更多回复）。
 
-## 二·五、楼中楼列表
+## 楼中楼列表
 
 ```http
 POST /api/v4/community/post/41029/comment/445567/replies
@@ -98,7 +98,29 @@ page=1
 - `root_id` 恒为该根评论的 `rid`，`reply_id` 指向**被回复的那一条**（可能不等于 `root_id`）；
 - 楼中楼通常已经在详情接口的 `comments[].replies` 里内联带出（实测 6/6 全带），这个接口主要用于「加载更多」。
 
-## 三、发评论 / 回复
+## 评论对象（Comment）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `rid` | int | 评论 ID（回复别人时作为 `reply_id`） |
+| `cid` | int | 所属帖子 ID |
+| `uid` / `username` / `avatar` | int / string / string | 作者 |
+| `content` | string | 正文（表情包为代码文本） |
+| `reply_id` | int | 顶层评论为 `-1` |
+| `root_id` | int | 楼中楼时指向根评论的 `rid`；顶层为 `0` |
+| `reply_uid` / `reply_username` / `reply` | int / string / string | 被回复者信息与原文摘要（顶层为空） |
+| `area` | string | 地区（服务端按 IP 判定，如 `Japan`） |
+| `time` / `updated_at` | int | 发送 / 编辑时间（unix 秒） |
+| `platform` | string | `web` / `android` |
+| `show_badge` | string | 佩戴徽章缩略图 URL，**逗号拼接**，顺序与 `/api/badge` 的 `show` 一致 |
+| `su` | int | 语义未知 ⚠️ |
+| `replies` | `Comment[]` | 楼中楼回复（可能只带前几条） |
+| `reply_more` | bool | 楼中楼是否还有更多 |
+| `reply_num` | int | 楼中楼回复总数 |
+
+脱敏样例：[`fixtures/post-detail-sample.json`](../../fixtures/post-detail-sample.json)。
+
+## 发评论 / 回复
 
 ```http
 POST /api/v4/community/post/<id>/reply
@@ -148,53 +170,7 @@ curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
 
 同时：目标评论的 `reply_num` `0 → 1`，帖子的 `reply` `5 → 6`；这条回复**同时出现在**详情接口的 `comments[].replies` 和 `/comment/<rid>/replies` 接口里。
 
-## 四、评论对象（Comment）
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `rid` | int | 评论 ID（回复别人时作为 `reply_id`） |
-| `cid` | int | 所属帖子 ID |
-| `uid` / `username` / `avatar` | int / string / string | 作者 |
-| `content` | string | 正文（表情包为代码文本） |
-| `reply_id` | int | 顶层评论为 `-1` |
-| `root_id` | int | 楼中楼时指向根评论的 `rid`；顶层为 `0` |
-| `reply_uid` / `reply_username` / `reply` | int / string / string | 被回复者信息与原文摘要（顶层为空） |
-| `area` | string | 地区（服务端按 IP 判定，如 `Japan`） |
-| `time` / `updated_at` | int | 发送 / 编辑时间（unix 秒） |
-| `platform` | string | `web` / `android` |
-| `show_badge` | string | 佩戴徽章缩略图 URL，**逗号拼接**，顺序与 `/api/badge` 的 `show` 一致 |
-| `su` | int | 语义未知 ⚠️ |
-| `replies` | `Comment[]` | 楼中楼回复（可能只带前几条） |
-| `reply_more` | bool | 楼中楼是否还有更多 |
-| `reply_num` | int | 楼中楼回复总数 |
-
-脱敏样例：[`fixtures/post-detail-sample.json`](../../fixtures/post-detail-sample.json)。
-
-## 已实测的边界
-
-- 顶层评论：`reply_id=-1`、`root_id=0`；发完帖子 `reply` 计数 `0 → 1`。
-- 评论**不暴露 IP**，只有粗粒度 `area`。
-- 帖子正文只写一个表情包代码（如 `[noygirl:yeah]`）完全可以，渲染成图片。
-- 评论/帖子都可以含多行文本（`text` 直接放 `\n` 未测 ⚠️）。
-
-## 示例
-
-```bash
-BASE=https://noymanga.com
-
-# 看帖 + 评论
-curl -s -X POST "$BASE/api/v4/community/post/78930" -b "NOY_SESSION=xxxx" |
-  python3 -c "import json,sys; d=json.load(sys.stdin)['data']; print(d['post']['title'], d['comment_count']); [print('-', c['username'], c['content'][:40]) for c in d['comments'][:5]]"
-
-# 发一条顶层评论（写操作）
-curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
-  -b "NOY_SESSION=xxxx" \
-  -d "reply_id=-1" \
-  --data-urlencode "text=测试评论" \
-  -d "platform=web" -d "hide_ip=false"
-```
-
-## 五、编辑帖子
+## 编辑帖子
 
 ```http
 POST /api/v3/edit_community_post
@@ -220,7 +196,7 @@ content=[noygirl:yeah][noygirl:haha]
 - 只能改 `title` / `content`，**改不了图片和 `spoiler`**；
 - 编辑不会把帖子顶到前面（`time` 不变）。
 
-## 六、点赞
+## 点赞
 
 ```http
 POST /api/v3/community_like
@@ -234,6 +210,30 @@ cid=78930
 - **开关式**：再调一次就取消点赞，返回 `{"is_like":false,"status":"ok"}`；
 - 帖子对象的 `like` 计数随之 `0 → 1 → 0`，`is_like` 同步翻转；
 - ⚠️ **不校验 `cid`**：传 `999999999` 或不传 `cid` 都返回 `{"is_like":true,"status":"ok"}`，但目标帖子的 `like` / `is_like` **没有任何变化**（比 `set_badge_show` 干净，不会污染数据）。所以别用返回值判断「点赞成功」，要么回读帖子，要么信任自己没传错 ID。
+
+## 已实测的边界
+
+- 顶层评论：`reply_id=-1`、`root_id=0`；发完帖子 `reply` 计数 `0 → 1`。
+- 评论**不暴露 IP**，只有粗粒度 `area`。
+- 帖子正文只写一个表情包代码（如 `[noygirl:yeah]`）完全可以，渲染成图片。
+- 评论/帖子都可以含多行文本（`text` 直接放 `\n` 未测 ⚠️）。
+
+## 示例
+
+```bash
+BASE=https://noymanga.com
+
+# 看帖 + 评论
+curl -s -X POST "$BASE/api/v4/community/post/78930" -b "NOY_SESSION=xxxx" |
+  python3 -c "import json,sys; d=json.load(sys.stdin)['data']; print(d['post']['title'], d['comment_count']); [print('-', c['username'], c['content'][:40]) for c in d['comments'][:5]]"
+
+# 发一条顶层评论（写操作）
+curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
+  -b "NOY_SESSION=xxxx" \
+  -d "reply_id=-1" \
+  --data-urlencode "text=测试评论" \
+  -d "platform=web" -d "hide_ip=false"
+```
 
 ## 相关
 
