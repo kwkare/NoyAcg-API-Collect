@@ -151,7 +151,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 
 | 项目 | 说明 |
 | --- | --- |
-| [NoyAcg-MCP](https://github.com/kwkare/NoyAcg-MCP) | TypeScript MCP server，把本文档的接口封成 agent 可直接调用的工具（读帖 / 发帖 / 评论 / 签到 / 徽章），带审计日志与只读模式 |
+| [NoyAcg-MCP](https://github.com/kwkare/NoyAcg-MCP) | TypeScript MCP server，把本文档的接口封成 agent 可直接调用的工具（读帖 / 发帖 / 评论 / 签到 / 徽章），带**浏览器登录自动抓 Cookie**、写操作审计与只读模式 |
 
 ## 贡献
 
