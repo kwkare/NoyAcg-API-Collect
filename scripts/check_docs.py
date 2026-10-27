@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""仓库自检：编码、BOM、换行、JSON 有效性、站内链接、旧域名残留。
+"""仓库自检：编码、BOM、换行、JSON/YAML 有效性、站内链接、旧域名残留、
+未被引用的 fixture、没有被 README 收录的文档。
 
 设计目标是「本地和 CI 跑的命令完全一样」：
 
@@ -50,6 +51,7 @@ INLINE_CODE_LINK_RE = re.compile(r"\]\(https?://")
 
 errors: list[str] = []
 checked = 0
+markdown: dict[Path, str] = {}
 
 
 def fail(path: Path, message: str) -> None:
@@ -120,6 +122,34 @@ def check_legacy_domain(path: Path, text: str) -> None:
             fail(path, f"第 {lineno} 行仍在使用旧域名 {LEGACY_DOMAIN}，请改成 https://noymanga.com")
 
 
+def check_yaml(path: Path, text: str) -> None:
+    try:
+        import yaml  # noqa: PLC0415  (可选依赖，装了才检查)
+    except ImportError:
+        return
+    try:
+        yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        fail(path, f"YAML 解析失败：{exc}")
+
+
+def check_fixture_usage() -> None:
+    """每个 fixture 都应该至少被一份文档引用，避免堆积没人看的样例。"""
+    corpus = "\n".join(markdown.values())
+    for path in sorted((ROOT / "fixtures").glob("*.json")):
+        if path.name not in corpus:
+            fail(path, "没有任何文档引用这个 fixture（要么补链接，要么删掉）")
+
+
+def check_doc_index() -> None:
+    """docs/ 下的每份文档都应该能从 README 找到入口。"""
+    readme = markdown.get(ROOT / "README.md", "")
+    for path in sorted((ROOT / "docs").rglob("*.md")):
+        name = path.relative_to(ROOT).as_posix()
+        if path.name not in readme and name not in readme:
+            fail(path, f"README 里没有指向它的链接（{name}）")
+
+
 def main() -> int:
     global checked
     for path in iter_files():
@@ -136,7 +166,14 @@ def main() -> int:
                 json.loads(text)
             except json.JSONDecodeError as exc:
                 fail(path, f"JSON 解析失败：{exc}")
+        if path.suffix.lower() in {".yaml", ".yml"}:
+            check_yaml(path, text)
+        if path.suffix.lower() in {".md", ".markdown"}:
+            markdown[path] = text
         check_legacy_domain(path, text)
+
+    check_fixture_usage()
+    check_doc_index()
 
     if errors:
         print(f"✗ 自检失败，共 {len(errors)} 个问题（已检查 {checked} 个文件）：\n")
@@ -144,7 +181,10 @@ def main() -> int:
             print(f"  - {item}")
         return 1
 
-    print(f"✓ 自检通过：{checked} 个文件，编码 / JSON / 站内链接 / 旧域名全部正常")
+    print(
+        f"✓ 自检通过：{checked} 个文件 —— 编码 / BOM / 换行 / JSON / YAML / "
+        f"站内链接 / 旧域名 / fixture 引用 / 文档索引 全部正常"
+    )
     return 0
 
 

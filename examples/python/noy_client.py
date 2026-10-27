@@ -21,7 +21,8 @@
     python noy_client.py like 78930 --yes       # 点赞 toggle
     python noy_client.py reply 78930 "你好" --yes
     python noy_client.py home --adult false   # 默认带 v=3，包含 stream
-    python noy_client.py login                # 校验 NOY_SESSION 或账号密码
+    python noy_client.py login                # 校验凭证（NOY_SESSION 或账号密码）
+    python noy_client.py logout --yes         # 登出（会吊销会话）
     python noy_client.py badges
     python noy_client.py toggle-badge 8 --yes
     python noy_client.py upload ./pic.jpg
@@ -115,14 +116,21 @@ class NoyClient:
             # status=ok 但没拿到 Cookie，说明服务端行为变了
             raise NoyError("登录返回 ok，但没有下发 NOY_SESSION")
 
+    def logout(self) -> bool:
+        """登出（会**吊销**当前会话，旧 cookie 立即失效）。"""
+        self._post("/api/logout", ok_statuses=("logout",))
+        return True
+
     @property
     def session_cookie(self) -> str | None:
         return self.session.cookies.get("NOY_SESSION", domain="noymanga.com")
 
     # ---------------------------------------------------------------- 读
 
-    def home(self) -> dict[str, Any]:
-        return self._post("/api/home")
+    def home(self, *, include_stream: bool = True) -> dict[str, Any]:
+        """首页聚合。带 v=3 才会返回 stream（番剧推荐），不带则没有这个 key。"""
+        data = {"v": 3, "stream_all": 1} if include_stream else None
+        return self._post("/api/home", data=data)
 
     def userinfo(self) -> dict[str, Any]:
         return self._post("/api/v3/userinfo").get("userinfo", {})
@@ -225,16 +233,24 @@ class NoyClient:
 # -------------------------------------------------------------------- CLI
 
 
-def _client_from_env(args: argparse.Namespace) -> NoyClient:
-    client = NoyClient(
-        os.environ.get("NOY_SESSION"),
-        allow_adult=str(args.adult) if hasattr(args, "adult") else "false",
-    )
+# 这些命令在没有 --yes 时只打印计划，不需要凭证
+WRITE_CMDS = {"reply", "edit", "like", "logout", "upload", "send"}
+
+
+def _make_client(args: argparse.Namespace) -> NoyClient | None:
+    """按环境变量造客户端；没有凭证时返回 None（由调用方决定要不要退出）。"""
+    client = NoyClient(os.environ.get("NOY_SESSION"), allow_adult=str(args.adult))
     if client.session_cookie is None:
         email, password = os.environ.get("NOY_EMAIL"), os.environ.get("NOY_PASS")
         if not (email and password):
-            sys.exit("缺少凭证：设置 NOY_SESSION，或同时设置 NOY_EMAIL / NOY_PASS")
+            return None
         client.login(email, password)
+    return client
+
+
+def _need(client: NoyClient | None) -> NoyClient:
+    if client is None:
+        sys.exit("缺少凭证：设置 NOY_SESSION，或同时设置 NOY_EMAIL / NOY_PASS")
     return client
 
 
@@ -244,6 +260,9 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("whoami", help="打印用户信息摘要")
+    sub.add_parser("login", help="校验当前凭证是否有效（不写盘）")
+    p_logout = sub.add_parser("logout", help="登出并吊销会话（默认 dry-run）")
+    p_logout.add_argument("--yes", action="store_true", help="真的登出")
     sub.add_parser("ads", help="首页广告位")
     sub.add_parser("signin", help="签到记录（只读）")
     p_sign = sub.add_parser("checkin", help="执行签到（默认 dry-run）")
@@ -299,7 +318,9 @@ def main(argv: list[str] | None = None) -> int:
     p_send.add_argument("--yes", action="store_true", help="真的发出去")
 
     args = parser.parse_args(argv)
-    client = _client_from_env(args)
+    # 干跑不需要凭证，方便先看看会做什么
+    dry_run = args.cmd in WRITE_CMDS and not getattr(args, "yes", False)
+    client = None if dry_run else _need(_make_client(args))
 
     try:
         if args.cmd == "whoami":
@@ -321,6 +342,17 @@ def main(argv: list[str] | None = None) -> int:
             for ad in client.ads():
                 host = ad["url"].split("/")[2] if "//" in ad["url"] else ad["url"]
                 print(f"{host:24} {ad['img']}")
+
+        elif args.cmd == "login":
+            info = client.userinfo()
+            print(f"凭证有效：uid={info.get('Uid')} 积分={info.get('Integral')}")
+
+        elif args.cmd == "logout":
+            if not args.yes:
+                print("[dry-run] 会调用 /api/logout 并**吊销当前会话**（加 --yes 执行）")
+            else:
+                client.logout()
+                print("已登出，当前会话已吊销")
 
         elif args.cmd == "signin":
             rec = client.signin_record()

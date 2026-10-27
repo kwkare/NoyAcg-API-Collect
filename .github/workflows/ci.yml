@@ -20,7 +20,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      # 编码 / BOM / CRLF / JSON 有效性 / 站内链接 / 旧域名残留
+      - name: 安装自检依赖
+        run: python3 -m pip install --quiet pyyaml
+
+      # 编码 / BOM / CRLF / JSON / YAML / 站内链接 / 旧域名 / fixture 与文档索引
       - name: scripts/check_docs.py
         run: python3 scripts/check_docs.py
 
