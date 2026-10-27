@@ -123,6 +123,31 @@ hide_ip=false
 
 **不返回评论 ID**，要确认得再拉一次列表。
 
+### 发楼中楼（回复某条评论）
+
+把 `reply_id` 换成目标评论的 `rid` 即可，实测（回复只有两个字「妈妈」的那条）：
+
+```bash
+curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
+  -b "NOY_SESSION=xxxx" \
+  -d "reply_id=460550" \
+  --data-urlencode "text=真是丢人的家伙" \
+  -d "platform=web" -d "hide_ip=false"
+```
+
+生成的新评论（回读确认）：
+
+| 字段 | 值 |
+| --- | --- |
+| `rid` | `460679`（新分配） |
+| `reply_id` | `460550`（= 被回复的那条） |
+| `root_id` | `460550`（顶层回复的 rid 就是自己，所以 root = reply_id） |
+| `reply_uid` / `reply_username` | 指向被回复者 |
+| `reply` | `"妈妈"`（被回复正文的节选） |
+| `content` | `"真是丢人的家伙"` |
+
+同时：目标评论的 `reply_num` `0 → 1`，帖子的 `reply` `5 → 6`；这条回复**同时出现在**详情接口的 `comments[].replies` 和 `/comment/<rid>/replies` 接口里。
+
 ## 四、评论对象（Comment）
 
 | 字段 | 类型 | 说明 |

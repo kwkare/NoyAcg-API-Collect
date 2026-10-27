@@ -2,6 +2,15 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，版本号取「整理批次（年.月.日）」而不是语义化版本。
 
+## 2026.10.27-f — 楼中楼写入实测
+
+- 用 `reply_id=<目标评论 rid>` 发了一条楼中楼回复（#78930 里回复「妈妈」那条），回读确认：
+  - 新评论 `root_id` = `reply_id` = 目标评论 `rid`（顶层回复自己就是根）；
+  - `reply_uid` / `reply_username` 指向被回复者，`reply` 是被回复正文节选；
+  - 目标评论 `reply_num` `0 → 1`、帖子 `reply` `5 → 6`；
+  - 这条回复同时出现在详情接口的内联 `comments[].replies` 与 `/comment/<rid>/replies` 接口里。
+- `docs/community/post_detail.md` 补「发楼中楼（回复某条评论）」一节，含回读对照表。
+
 ## 2026.10.27-e — 已读机制确认 + 24 小时观察
 
 ### 确认
