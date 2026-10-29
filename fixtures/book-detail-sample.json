@@ -1,0 +1,154 @@
+{
+  "book": {
+    "info": {
+      "Bid": 54485,
+      "Mode": 1,
+      "Bookname": "腦洞學生會",
+      "alias": "學生會也有洞!",
+      "Description": "發生在學生會裏的熱鬧校園喜劇！就算是學生會的小屁男孩，也是有洞洞的哦……",
+      "Author": "むちまろ（无知麻吕）",
+      "Pname": "未知",
+      "Ptag": "搞笑 校園 戀愛 日常 四格",
+      "Otag": "原創",
+      "Time": 1792832711,
+      "Views": 6975,
+      "Favorites": 1198,
+      "F": false,
+      "Len": 1,
+      "Adult": 0,
+      "Status": 0,
+      "publish_year": "2022",
+      "RatingSUM": 10,
+      "RatingCount": 47,
+      "RatingBayes": 0
+    },
+    "recommend": [
+      {
+        "bid": 14623,
+        "bookname": "不要欺負我，長瀞同學",
+        "author": "NANASHI",
+        "tags": "校園 戀愛 活力 日常 搞笑",
+        "views": 4806,
+        "favorites": 522,
+        "mode": true,
+        "status": true
+      },
+      {
+        "bid": 43176,
+        "bookname": "GRANDBLUE碧藍之海",
+        "author": "井上坚二",
+        "tags": "戀愛 校園 搞笑 日常 青春",
+        "views": 13512,
+        "favorites": 1850,
+        "mode": true,
+        "status": false
+      }
+    ],
+    "translate": ""
+  },
+  "chapters": {
+    "categories": [
+      {
+        "id": 7,
+        "name": "番外篇"
+      },
+      {
+        "id": 5,
+        "name": "單話"
+      }
+    ],
+    "data": {
+      "5": [
+        {
+          "id": 503603,
+          "name": "第01話",
+          "count": 17,
+          "sort": 0,
+          "created_at": 1769535592
+        },
+        {
+          "id": 503604,
+          "name": "第02話",
+          "count": 12,
+          "sort": 1,
+          "created_at": 1769535592
+        }
+      ],
+      "6": [
+        {
+          "id": 503787,
+          "name": "第01卷",
+          "count": 160,
+          "sort": 0,
+          "created_at": 1769535593
+        },
+        {
+          "id": 503788,
+          "name": "第02卷",
+          "count": 144,
+          "sort": 1,
+          "created_at": 1769535593
+        }
+      ],
+      "7": [
+        {
+          "id": 503764,
+          "name": "兔女郎特典",
+          "count": 6,
+          "sort": 0,
+          "created_at": 1769535593
+        },
+        {
+          "id": 503765,
+          "name": "第2卷特典",
+          "count": 8,
+          "sort": 1,
+          "created_at": 1769535593
+        }
+      ]
+    }
+  },
+  "comment": {
+    "count": 19,
+    "data": [
+      {
+        "cid": 1,
+        "uid": 0,
+        "username": "official",
+        "avatar": "",
+        "avatarUrl": "avatar/12345-<sha>.webp",
+        "area": "官方公告",
+        "reply": -1,
+        "reply_text": "",
+        "platform": "web",
+        "time": 1757234215,
+        "content": "官方公告内容（示例）",
+        "show_badge": "",
+        "su": "",
+        "replies": []
+      },
+      {
+        "cid": 145683,
+        "uid": "12345",
+        "username": "user_1",
+        "avatar": "",
+        "avatarUrl": "avatar/12345-<sha>.webp",
+        "area": "China mainland",
+        "reply": -1,
+        "reply_text": "",
+        "platform": "android",
+        "time": 1793087156,
+        "content": "示例评论内容 [noygirl:yeah]",
+        "show_badge": "",
+        "su": "0",
+        "replies": []
+      }
+    ]
+  },
+  "points": {
+    "book_price": "2",
+    "user_balance": "100.00"
+  },
+  "status": "ok",
+  "uid": "12345"
+}

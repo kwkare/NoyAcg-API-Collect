@@ -22,6 +22,8 @@
 | `msg-comment-reply-sample.json` | `POST /api/v3/get_msg`（`type=reply`） | 2026-10-27 | 评论回覆：`book` 字典 + `comment` 列表的结构 |
 | `msg-community-reply-sample.json` | `POST /api/v3/get_msg`（`type=community_reply`） | 2026-10-27 | 社區回覆：`community` 字典 + 80 条/页的列表结构 |
 | `unauthorized.json` | 任意需要鉴权的接口 | 2026-10-26 | 会话失效时的统一响应 `{"status":"login"}` |
+| `book-detail-sample.json` | `GET /api/v4/book/<bid>` | 2026-10-27 | 书籍详情：`info` + `recommend` + 章节字典（每类截断到 2 条）+ 首屏评论 + 售价。用户/评论内容已打码 |
+| `book-comments-sample.json` | `GET /api/v4/comment/book/<bid>/comments` | 2026-10-27 | 评论分页形态：主键是 `cid`（不是 `rid`），`top_count` 语义未确认 |
 
 ## 约定
 

@@ -9,7 +9,7 @@ info:
 
     通用约定：
 
-    - 除图床上传外，全部为 `POST` + `application/x-www-form-urlencoded`；
+    - 除图床上传（multipart）和书籍详情/评论（`GET` + query）外，其余为 `POST` + `application/x-www-form-urlencoded`；
     - 业务状态放在响应体的 `status` 字段（`ok` / `error` / `login`），HTTP 状态码几乎恒为 `200`；
     - 鉴权靠 Cookie `NOY_SESSION`，由 `POST /api/login` 下发，有效期约 30 天；
     - 内容分级由请求头 `allow-adult` 控制，而不是账号配置；**`/api/home` 不传该头时默认返回 R18**。
@@ -36,6 +36,8 @@ tags:
     description: 首页聚合
   - name: user
     description: 用户资料与徽章
+  - name: book
+    description: 漫画详情与评论（GET）
   - name: community
     description: 图床与发帖
   - name: task
@@ -667,6 +669,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LikeResult'
+
+  /api/v4/book/{bid}:
+    get:
+      tags: [book]
+      summary: 书籍详情（含章节与首屏评论）
+      operationId: getBookDetail
+      description: |
+        一次返回书籍资料、推荐、**全部章节**（按分类的字典）和首屏评论，不需要再请求章节接口。
+
+        `chapters.data` 以分类 id 为 key（不是数组）；官方置顶评论（`uid: 0`）不计入 `comment.count`。
+      parameters:
+        - name: bid
+          in: path
+          required: true
+          description: 书籍 ID（Bid）
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AllowAdult'
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效（`{"status":"login"}`）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDetailResult'
+
+  /api/v4/comment/book/{bid}/comments:
+    get:
+      tags: [book]
+      summary: 书籍评论（分页）
+      operationId: listBookComments
+      description: |
+        结构与帖子评论一致，但主键字段是 `cid`（帖子评论是 `rid`）。
+
+        ⚠️ `top_count` 语义未确认（实测某本书返回 17，并不是置顶条数）。
+      parameters:
+        - name: bid
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          required: false
+          description: 页码，从 1 开始
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - $ref: '#/components/parameters/AllowAdult'
+      responses:
+        '4XX':
+          description: 客户端侧异常（限流 / 参数不合法），具体码未整理
+        '200':
+          description: 成功或失效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCommentsResult'
 
 components:
   securitySchemes:
@@ -1410,3 +1473,165 @@ components:
           type: string
           description: 图床文件名，形如 `<Uhash>-<sha256>.webp`
           examples: ['91266-13025882b9402bd576b628a1030433a6388156d5aaeccb40362960af47a4aa79.webp']
+
+    BookDetailResult:
+      type: object
+      description: 书籍详情（`GET /api/v4/book/{bid}`）
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        uid:
+          type: integer
+          description: 当前登录用户 UID
+        book:
+          type: object
+          properties:
+            info:
+              $ref: '#/components/schemas/Book'
+            recommend:
+              type: array
+              items:
+                $ref: '#/components/schemas/RecommendBook'
+            translate:
+              type: string
+              description: 实测为空串，用途未知
+        chapters:
+          $ref: '#/components/schemas/BookChapters'
+        comment:
+          type: object
+          properties:
+            count:
+              type: integer
+              description: 评论总数，**不含**官方置顶评论
+            data:
+              type: array
+              description: 首屏评论（实测 20 条，可能含 1 条官方置顶）
+              items:
+                $ref: '#/components/schemas/BookComment'
+        points:
+          type: object
+          properties:
+            book_price:
+              type: string
+              description: 阅读所需积分（**字符串**）
+              examples: ['2']
+            user_balance:
+              type: string
+              description: 当前用户积分余额（**字符串**，敏感）
+
+    RecommendBook:
+      type: object
+      description: 书籍推荐位。注意字段是小写下划线风格，且 mode/status 是布尔（与 Book 的整数不同）
+      properties:
+        bid:
+          type: integer
+        bookname:
+          type: string
+        author:
+          type: string
+        tags:
+          type: string
+        views:
+          type: integer
+        favorites:
+          type: integer
+        mode:
+          type: boolean
+        status:
+          type: boolean
+
+    BookChapters:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+        data:
+          type: object
+          description: 以分类 id（字符串）为 key 的章节数组
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/Chapter'
+
+    Chapter:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        count:
+          type: integer
+          description: 这一话的页数
+        sort:
+          type: integer
+        created_at:
+          type: integer
+          format: int64
+
+    BookComment:
+      type: object
+      description: 书籍评论。与 Comment 同构，但主键字段是 cid
+      properties:
+        cid:
+          type: integer
+          description: 评论 ID
+        bid:
+          type: integer
+        uid:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: string
+        avatarUrl:
+          type: string
+        content:
+          type: string
+        reply:
+          type: integer
+          description: 顶层评论为 -1
+        reply_text:
+          type: string
+        area:
+          type: string
+        time:
+          type: integer
+          format: int64
+        platform:
+          type: string
+        show_badge:
+          type: string
+        su:
+          type: string
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookComment'
+
+    BookCommentsResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          type: object
+          properties:
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/BookComment'
+            page:
+              type: integer
+            over:
+              type: boolean
+            top_count:
+              type: integer
+              description: 语义未确认 ⚠️

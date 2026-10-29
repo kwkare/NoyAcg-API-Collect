@@ -37,6 +37,8 @@
 | 首页广告位 | `POST /api/v3/ads` | Cookie | ✅ 2026-10-26 | [ads](./docs/ads.md) |
 | 用户信息 | `POST /api/v3/userinfo` | Cookie | ✅ 2026-10-26 | [userinfo](./docs/user/userinfo.md) |
 | 徽章列表 | `POST /api/badge` | Cookie | ✅ 2026-10-26 | [badge](./docs/user/badge.md) |
+| 漫画详情 | `GET /api/v4/book/<bid>` | Cookie | ✅ 2026-10-27 | [book_detail](./docs/book/book_detail.md) |
+| 漫画评论 | `GET /api/v4/comment/book/<bid>/comments` | Cookie | ✅ 2026-10-27 | [book_detail](./docs/book/book_detail.md) |
 | 徽章佩戴开关 | `POST /api/v3/set_badge_show` | Cookie | ✅ 2026-10-26（toggle，且不校验 ID） | [set_badge_show](./docs/user/set_badge_show.md) |
 | 签到记录 | `POST /api/v4/signin/record` | Cookie | ✅ 2026-10-27（跨零点实测） | [signin](./docs/task/signin.md) |
 | 执行签到 | `POST /api/v4/signin/sign` | Cookie | ✅ 2026-10-27（真签了） | [signin](./docs/task/signin.md) |
@@ -88,6 +90,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 | `Book` 新增 **`alias`** 字段 | 20 个字段了，解析器按固定下标取值会错位 |
 | `Book.Len` 不是枚举 | 实测 R18 作品取到 `5`~`194`，是「长度/话数」而非「1=短/2=长」 |
 | `userinfo.Integral` 是**小数** | 实测 `1090.7`，按 int 建模会丢精度 |
+| `RatingSUM` 是 **10 分制** | 站点界面显示的 5.0 是 `10 / 2`；按 5 分制建模会把 9.7 当成 9.7 星 |
 | `userinfo.Badge[].Id` **恒为 `0`** | 服务端不填这个字段，要真实 ID 只能查 `/api/badge` |
 | `userinfo.Badge` **不是**佩戴中的徽章 | 它是全部徽章（实测 `show` 只有 4 项时仍返回 5 项），佩戴状态只看 `/api/badge.show` |
 | `set_badge_show` **不校验 ID** | 任何字符串（包括 `114514`、空串）都会被写进 `show`，只能靠「再切一次」清掉 |
@@ -138,6 +141,7 @@ curl -s -b jar.txt -X POST "$BASE/api/home" \
 │   ├── home.md
 │   ├── ads.md
 │   ├── auth/              login / session（cookie 机制）
+│   ├── book/              漫画详情与评论（GET 接口）
 │   ├── user/              userinfo / badge / set_badge_show / messages
 │   ├── task/              signin（记录查询 + 执行签到）
 │   └── community/         图床 token / 上传 / 发帖 / 列表 / 详情与评论 / 表情包

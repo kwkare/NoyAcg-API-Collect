@@ -2,6 +2,21 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，按 **ISO 日期（`YYYY-MM-DD`）** 分条记录，同一天多次整理按新→旧排列。
 
+## 2026-10-27 · 漫画详情与评论（GET 接口）
+
+### 新增
+
+- `GET /api/v4/book/<bid>`：书籍详情。**章节列表**（按分类的字典）和**首屏评论**都在这个响应里，不用再请求章节接口。
+  另有 `recommend`（小写下划线字段、布尔 `mode`/`status`）和 `points`（`book_price` / `user_balance`，都是**字符串**）。
+- `GET /api/v4/comment/book/<bid>/comments?page=N`：书籍评论分页。结构与帖子评论一致，但主键字段叫 `cid`。
+- 书籍页路由是 `/manga/<bid>`（`/book/`、`/comic/`、`/detail/` 都是 404）。
+- 未整理：`GET /api/v4/sync/reading/<bid>`（阅读进度）。
+
+### 修正
+
+- **`RatingSUM` 是 10 分制**：站点界面显示的 `5.0` 其实是 `10 / 2`（实测 `9.7 → 4.8`）。旧文档只写了「平均评分」，容易被按 5 分制误用。
+- `comment.count` **不含**官方置顶评论：实测 `count=19` 但 `data` 有 20 条（第一条是 `uid:0` 的官方公告）。
+
 ## 2026-10-27 · 图床 URL 拼接纠错 + 头像/背景图接口
 
 ### 修正

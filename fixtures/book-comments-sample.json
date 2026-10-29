@@ -1,0 +1,58 @@
+{
+  "data": {
+    "comments": [
+      {
+        "cid": 145683,
+        "uid": "12345",
+        "bid": 54485,
+        "username": "user_1",
+        "avatar": "avatar/12345-<sha>.webp",
+        "su": 0,
+        "content": "示例评论内容 [noygirl:yeah]",
+        "reply_id": -1,
+        "root_id": 0,
+        "reply_uid": 0,
+        "reply_username": "",
+        "reply": "",
+        "area": "China mainland",
+        "time": 1793087156,
+        "updated_at": 1793087156,
+        "platform": "android",
+        "show_badge": "",
+        "replies": [],
+        "reply_more": false,
+        "reply_num": 0,
+        "avatarUrl": "",
+        "reply_text": ""
+      },
+      {
+        "cid": 145249,
+        "uid": "12345",
+        "bid": 54485,
+        "username": "user_1",
+        "avatar": "avatar/12345-<sha>.webp",
+        "su": 0,
+        "content": "示例评论内容 [noygirl:yeah]",
+        "reply_id": -1,
+        "root_id": 0,
+        "reply_uid": 0,
+        "reply_username": "",
+        "reply": "",
+        "area": "China mainland",
+        "time": 1792838093,
+        "updated_at": 1792838093,
+        "platform": "android",
+        "show_badge": "",
+        "replies": [],
+        "reply_more": false,
+        "reply_num": 0,
+        "avatarUrl": "",
+        "reply_text": ""
+      }
+    ],
+    "over": true,
+    "page": 1,
+    "top_count": 17
+  },
+  "status": "ok"
+}
