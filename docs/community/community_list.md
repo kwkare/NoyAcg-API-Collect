@@ -60,7 +60,7 @@
 | `avatar` | string | 作者头像相对路径 |
 | `title` | string | 标题 |
 | `content` | string | 正文（表情包是 `[noygirl:yeah]` 这种代码文本，见 [stickers.md](./stickers.md)） |
-| `image` | string[] | 图片路径数组，元素形如 `image/<file>.webp`；无图时为空数组 |
+| `image` | string[] | 图片路径数组，元素形如 `image/<file>.webp`；无图时为空数组。**图床有防盗链**：直接抓 URL 会 403，必须带 `Referer: https://noymanga.com/` |
 | `time` | int | 发帖时间（unix 秒） |
 | `expired` | int | **过期时间**，实测 = `time + 7776000`（正好 **90 天**）。到期后帖子**不会被删除**，但会从过滤 / 搜索结果里隐藏（站内用户实测，2026-10-27） |
 | `area` | string | 发帖地区，由服务端根据 IP 判定（如 `Japan`），非用户自填 |
