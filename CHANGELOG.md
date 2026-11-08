@@ -2,6 +2,14 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；本项目是文档项目，按 **ISO 日期（`YYYY-MM-DD`）** 分条记录，同一天多次整理按新→旧排列。
 
+## 2026-10-31 · 删除接口实测（remove_content）
+
+- `POST /api/v3/remove_content`：`item=community` 删帖、`item=community_reply` 删评论（顶层/楼中楼同参数）。
+- 响应一律 `{"status":"ok"}`：**不校验** id 存在性、item 枚举、重复删除——成功与否必须回读（帖子 → 详情 `not_found`；评论 → 详情里消失）。
+- web 端只有评论删除按钮（确认框「確認刪除」），帖子详情页没有删帖按钮；`remove_content` 命名在 bundle 里不存在，靠 UI 抓包 + 盲测发现。
+- 修正 [post_detail.md](./docs/community/post_detail.md) 与 [send_community.md](./docs/community/send_community.md) 里「没有删除接口」的旧结论。
+- 实测过程：发帖 #80075 → 评论 rid 470389 → 依次删除；旧测试帖 #78930 也在本次验证中删除（作者本人操作，not_found）。
+
 ## 2026-10-27 · 漫画详情与评论（GET 接口）
 
 ### 新增
