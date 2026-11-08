@@ -63,7 +63,7 @@
 BASE=https://noymanga.com
 
 # 发一条只有表情包的评论
-curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
+curl -s -X POST "$BASE/api/v4/community/post/80078/reply" \
   -b "NOY_SESSION=xxxx" \
   -d "reply_id=-1" \
   --data-urlencode "text=[noygirl:yeah]" \
