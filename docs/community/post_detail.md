@@ -8,6 +8,7 @@
 | 评论列表 | `POST /api/v4/community/post/<id>/comments` |
 | 发评论 / 回复 | `POST /api/v4/community/post/<id>/reply` |
 | 楼中楼列表 | `POST /api/v4/community/post/<id>/comment/<rid>/replies`（✅ 已实测） |
+| 删除（帖 / 评论） | `POST /api/v3/remove_content`（✅ 2026-10-31 实测） |
 
 | 项目 | 内容 |
 | --- | --- |
@@ -210,6 +211,33 @@ cid=78930
 - **开关式**：再调一次就取消点赞，返回 `{"is_like":false,"status":"ok"}`；
 - 帖子对象的 `like` 计数随之 `0 → 1 → 0`，`is_like` 同步翻转；
 - ⚠️ **不校验 `cid`**：传 `999999999` 或不传 `cid` 都返回 `{"is_like":true,"status":"ok"}`，但目标帖子的 `like` / `is_like` **没有任何变化**（比 `set_badge_show` 干净，不会污染数据）。所以别用返回值判断「点赞成功」，要么回读帖子，要么信任自己没传错 ID。
+
+## 删除（帖子 / 评论）
+
+```http
+POST /api/v3/remove_content
+id=<内容ID>
+item=community        ← 删帖
+item=community_reply  ← 删评论（顶层 / 楼中楼同参数）
+```
+
+响应一律 `{"status":"ok"}`。✅ 2026-10-31 实测（发帖 → 评论 → 依次删除，全流程成功）。
+
+| 场景 | 响应 |
+| --- | --- |
+| 删除自己的评论 | `{"status":"ok"}`，评论立即从详情消失 |
+| 删除自己的帖子 | `{"status":"ok"}`，详情变 `{"status":"not_found"}`，从列表消失 |
+| 重复删除（幂等） | `{"status":"ok"}` |
+| 不存在的 id | `{"status":"ok"}` ⚠️ **不校验** |
+| 不存在的 item 枚举 | `{"status":"ok"}` ⚠️ **不校验** |
+| 未登录 | `{"status":"login"}` |
+
+要点：
+
+- **web 端只有评论删除按钮**（自己的评论旁「刪除」，确认框「確認刪除」）；帖子详情页**没有**删帖按钮，删帖只能走 API（或 App）。
+- 服务端不校验任何参数，**判断删除是否成功必须回读**：帖子看详情是否 `not_found`，评论看是否还出现在详情里。
+- `remove_content` 这个命名在前端 bundle 里**不存在**（web 无调用点），是通过 UI 抓包 + 端点盲测发现的。
+- 对**他人**内容的删除权限边界未测 ⚠️。
 
 ## 已实测的边界
 
