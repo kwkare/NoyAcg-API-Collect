@@ -125,7 +125,7 @@ for p in d['info'][:5]:
 | 过期 41 天的帖子详情（6 条样本） | ✅ 全部正常 |
 | 过期帖是否还在列表 | ✅ 6/6 仍在 `type=new` 第 300 页；第 196~200 页里 **78% 是已过期帖** |
 | 站内搜索 | web 搜索（`/api/v4/search/fetch`）**只搜书籍**，范围只有 預設 / 標籤 / 作者，没有社区帖搜索，不存在「从搜索消失」 |
-| 真正的消失 | 只有作者调 `remove_content` 删除（详情变 `not_found`，见 [post_detail.md](./community/post_detail.md)） |
+| 真正的消失 | 只有作者调 `remove_content` 删除（详情变 `not_found`，见 [post_detail.md](./post_detail.md)） |
 
 **「90 天消失」的错觉来源**：列表按发帖时间倒序，90 天 ≈ 195 页 × 每页 40 条，没人互动的旧帖自然翻不到了——沉底 ≠ 消失。
 
