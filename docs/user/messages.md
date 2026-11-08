@@ -100,10 +100,10 @@ page=1&type=community_reply&v=3
 ```json
 {
   "community_reply": {
-    "community": { "78930": { "id": 78930, "title": "图", "…": "…" } },
+    "community": { "80078": { "id": 80078, "title": "气笑了", "…": "…" } },
     "community_reply": [
       {
-        "rid": 460483, "uid": 12345, "cid": 78930,
+        "rid": 460483, "uid": 12345, "cid": 80078,
         "username": "…", "avatar": "", "avatarUrl": "avatar/12345-<sha>.webp",
         "area": "Japan", "reply": -1, "reply_text": "",
         "platform": "", "time": 1793030863, "content": "…"
