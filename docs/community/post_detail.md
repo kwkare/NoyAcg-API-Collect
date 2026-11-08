@@ -10,6 +10,8 @@
 | 楼中楼列表 | `POST /api/v4/community/post/<id>/comment/<rid>/replies`（✅ 已实测） |
 | 删除（帖 / 评论） | `POST /api/v3/remove_content`（✅ 2026-10-31 实测） |
 
+> 本文示例统一用帖子 **#80078**（《气笑了》，2026-11-08 创建）。旧示例帖 #78930 已于 2026-10-31 测试删除接口时删除（作者本人操作），历史实测记录中的旧 ID 不再可访问。
+
 | 项目 | 内容 |
 | --- | --- |
 | Content-Type | `application/x-www-form-urlencoded` |
@@ -19,7 +21,7 @@
 ## 帖子详情
 
 ```http
-POST /api/v4/community/post/78930
+POST /api/v4/community/post/80078
 ```
 
 响应结构：
@@ -27,7 +29,7 @@ POST /api/v4/community/post/78930
 ```json
 {
   "data": {
-    "post": { "id": 78930, "title": "图", "…": "…" },
+    "post": { "id": 80078, "title": "气笑了", "…": "…" },
     "comments": [ { "rid": 460483, "content": "…", "…": "…" } ],
     "comment_count": 1,
     "top_count": 1,
@@ -50,7 +52,7 @@ POST /api/v4/community/post/78930
 ## 评论列表（分页）
 
 ```http
-POST /api/v4/community/post/78930/comments
+POST /api/v4/community/post/80078/comments
 page=1
 ```
 
@@ -151,7 +153,7 @@ hide_ip=false
 把 `reply_id` 换成目标评论的 `rid` 即可，实测（回复只有两个字「妈妈」的那条）：
 
 ```bash
-curl -s -X POST "$BASE/api/v4/community/post/78930/reply" \
+curl -s -X POST "$BASE/api/v4/community/post/80078/reply" \
   -b "NOY_SESSION=xxxx" \
   -d "reply_id=460550" \
   --data-urlencode "text=真是丢人的家伙" \
@@ -252,7 +254,7 @@ item=community_reply  ← 删评论（顶层 / 楼中楼同参数）
 BASE=https://noymanga.com
 
 # 看帖 + 评论
-curl -s -X POST "$BASE/api/v4/community/post/78930" -b "NOY_SESSION=xxxx" |
+curl -s -X POST "$BASE/api/v4/community/post/80078" -b "NOY_SESSION=xxxx" |
   python3 -c "import json,sys; d=json.load(sys.stdin)['data']; print(d['post']['title'], d['comment_count']); [print('-', c['username'], c['content'][:40]) for c in d['comments'][:5]]"
 
 # 发一条顶层评论（写操作）
