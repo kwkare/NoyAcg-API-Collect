@@ -7,7 +7,7 @@
 | Endpoint | `POST https://noymanga.com/api/v3/send_community` |
 | Content-Type | `application/x-www-form-urlencoded` |
 | 鉴权 | Cookie `NOY_SESSION` |
-| 校验 | ✅ 2026-10-27 实测（真的发了一帖：标题「图」+ 6 张图 + 表情包正文） |
+| 校验 | ✅ 2026-10-27 实测（6 图帖）；2026-11-08 复测（1 图帖 #80078） |
 
 > ⚠️ 这是**写操作**，会在站点上产生真实内容。删帖用 `POST /api/v3/remove_content`（见 [post_detail.md](./post_detail.md#删除帖子--评论)），不删的话 90 天后随 `expired` 自动过期。
 > 测试时请发到自己能删的地方，并遵守社区规则；不要用它刷帖。
@@ -60,7 +60,7 @@
 | `image` | 6 个 `image/<Uhash>-<sha256>.webp` |
 | `platform` | `web` |
 | 响应 | `{"status":"ok"}` |
-| 落到列表后 | `id=78930`、`image` 6 项、`reply=0`、`like=0`、`expired = time + 7776000`（90 天） |
+| 落到列表后 | `id=78930`（该帖已于 2026-10-31 删除）、`image` 6 项、`reply=0`、`like=0`、`expired = time + 7776000`（90 天） |
 
 ### 关于「模糊 / R18」
 
